@@ -10,6 +10,8 @@
       "package": "@opencode/ai/providers/openai-compatible",
       "settings": {
         "baseURL": "http://127.0.0.1:8080/v1"
+        // Se imposti LLAMA_API_KEY in .env, esportala e decommenta:
+        // "apiKey": "{env:LLAMA_API_KEY}"
       },
       "models": {
         "coder": {

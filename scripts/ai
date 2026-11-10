@@ -13,6 +13,8 @@
 #   ./ai logs               follow the server log
 #   ./ai download [--all|<role>]
 #   ./ai benchmark <role> [threads]
+#   ./ai upgrade [all|runtime|skills|check]
+#   ./ai healthcheck        integrity + health
 #   ./ai help
 # ============================================================================
 set -euo pipefail
@@ -25,20 +27,48 @@ MODELS_DIR="${MODELS_DIR:-$HOME/local-ai/models}"
 LLAMA_CLI_BIN="${LLAMA_CLI_BIN:-llama-cli}"
 LOG_FILE="$REPO_DIR/runtime/llama-server.log"
 
+usage() {
+  cat <<'EOF'
+Usage: ./ai <command> [args]
+
+  chat [role]        start server (if needed) + open the built-in web UI
+  code               coding model (Qwen2.5-Coder-7B)
+  sysadmin           sysadmin model (Gemma 3 12B)
+  sysadmin-fast      fast sysadmin (Qwen2.5-7B Q5)
+  cli [role]         terminal chat via llama-cli (no server)
+  start <role>       start llama-server only
+  stop               stop and free RAM
+  status             runtime + model + RAM status
+  logs               follow the server log
+  download [--all|<role>]
+  benchmark <role> [threads]
+  upgrade [all|runtime|skills|check]
+  healthcheck        integrity + health
+  help               this help
+
+Roles: coder | general | sysadmin | sysadmin-fast
+EOF
+}
+
 open_browser() {
-  local url="http://$HOST:$PORT"
+  local url="http://127.0.0.1:$PORT"
   if command -v xdg-open >/dev/null 2>&1; then
     xdg-open "$url" >/dev/null 2>&1 || true
   fi
-  echo "Web UI: $url   (OpenAI API: $url/v1)"
+  echo "Web UI (local): $url"
+  echo "API (OpenAI):   $url/v1"
+  if [ "$HOST" = "0.0.0.0" ]; then
+    echo "LAN access:"
+    for ip in $(hostname -I 2>/dev/null); do
+      echo "   http://$ip:$PORT/v1"
+    done
+  fi
 }
 
 ensure_server() {
   local role="$1"
-  if "$REPO_DIR/scripts/start.sh" "$role" >/dev/null 2>&1; then
-    "$REPO_DIR/scripts/start.sh" "$role"
-  else
-    echo "Server already running. If it's a different model, run ./ai stop first."
+  if ! "$REPO_DIR/scripts/start.sh" "$role"; then
+    echo "note: could not start '$role' (see above). To switch models: ./ai stop first."
   fi
 }
 
@@ -51,8 +81,8 @@ case "$cmd" in
     ensure_server "$role"
     open_browser
     ;;
-  code)       ensure_server coder; open_browser ;;
-  sysadmin)   ensure_server sysadmin; open_browser ;;
+  code)          ensure_server coder; open_browser ;;
+  sysadmin)      ensure_server sysadmin; open_browser ;;
   sysadmin-fast) ensure_server sysadmin-fast; open_browser ;;
   cli)
     role="${1:-general}"
@@ -63,18 +93,24 @@ case "$cmd" in
     [ -f "$MODELS_DIR/$MODEL" ] || { echo "model not found: $MODELS_DIR/$MODEL" >&2; exit 1; }
     exec "$LLAMA_CLI_BIN" -m "$MODELS_DIR/$MODEL" -c "$CTX" -t "$THREADS" -cnv
     ;;
-  start)  "$REPO_DIR/scripts/start.sh" "$@" ;;
-  stop)   "$REPO_DIR/scripts/stop.sh" ;;
-  status) "$REPO_DIR/scripts/status.sh" ;;
-  logs)   exec tail -f "$LOG_FILE" ;;
+  start)      "$REPO_DIR/scripts/start.sh" "$@" ;;
+  stop)       "$REPO_DIR/scripts/stop.sh" ;;
+  status)     "$REPO_DIR/scripts/status.sh" ;;
+  logs)
+    if [ ! -f "$LOG_FILE" ]; then
+      echo "no log yet (server never started): $LOG_FILE" >&2
+      exit 1
+    fi
+    exec tail -f "$LOG_FILE"
+    ;;
   download)   "$REPO_DIR/scripts/download-models.sh" "${@:---all}" ;;
   benchmark)  "$REPO_DIR/scripts/benchmark.sh" "$@" ;;
+  upgrade)    "$REPO_DIR/scripts/upgrade.sh" "${@:-all}" ;;
   healthcheck) "$REPO_DIR/scripts/healthcheck.sh" ;;
-  help|--help|-h)
-    sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
-    ;;
+  help|--help|-h) usage ;;
   *)
-    echo "unknown command: $cmd (run ./ai help)" >&2
+    echo "unknown command: $cmd" >&2
+    usage >&2
     exit 2
     ;;
 esac

@@ -14,14 +14,15 @@ if [ ! -f "$PID_FILE" ]; then
 fi
 
 PID="$(cat "$PID_FILE")"
-if kill -0 "$PID" 2>/dev/null; then
+
+# Only kill if the PID really belongs to llama-server (guards against PID reuse).
+if kill -0 "$PID" 2>/dev/null && tr '\0' ' ' < "/proc/$PID/cmdline" 2>/dev/null | grep -q llama-server; then
   echo "== stopping llama-server (pid $PID)..."
   kill "$PID"
   for _ in $(seq 1 20); do
     kill -0 "$PID" 2>/dev/null || break
     sleep 0.25
   done
-  # graceful fallback
   if kill -0 "$PID" 2>/dev/null; then
     kill -9 "$PID" 2>/dev/null || true
   fi

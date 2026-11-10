@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Reproducible benchmark. Measures tokens/s (prompt + generation), load time
-# and peak RSS for a given model across thread counts. Results are saved under
+# Reproducible benchmark with llama-bench (reports load time, prompt processing
+# and generation speed across thread counts). Results saved under
 # benchmarks/results/<timestamp>/.
 #
 #   ./scripts/benchmark.sh <role> [threads...]
 #   ./scripts/benchmark.sh coder "4 6 8"
 #
-# Distinguishes MEASURED results (this script) from third-party numbers:
-# everything written to benchmarks/results/ is measured on THIS machine.
+# Everything written to benchmarks/results/ is MEASURED on this machine.
+# Peak RAM is best checked while serving: ./scripts/ai status
 # ============================================================================
 set -euo pipefail
 
@@ -18,9 +18,13 @@ source "$REPO_DIR/config/llama.cpp/roles.conf"
 
 MODELS_DIR="${MODELS_DIR:-$HOME/local-ai/models}"
 LLAMA_BENCH_BIN="${LLAMA_BENCH_BIN:-llama-bench}"
-# accept the source-build path if the binary is not on PATH
-if ! command -v "$LLAMA_BENCH_BIN" >/dev/null 2>&1 && [ -x "$REPO_DIR/llama.cpp/build/bin/llama-bench" ]; then
-  LLAMA_BENCH_BIN="$REPO_DIR/llama.cpp/build/bin/llama-bench"
+if ! command -v "$LLAMA_BENCH_BIN" >/dev/null 2>&1; then
+  if [ -x "$REPO_DIR/llama.cpp/build/bin/llama-bench" ]; then
+    LLAMA_BENCH_BIN="$REPO_DIR/llama.cpp/build/bin/llama-bench"
+  else
+    echo "llama-bench not found. Install it: ./scripts/install.sh" >&2
+    exit 1
+  fi
 fi
 
 ROLE="${1:-}"
@@ -37,23 +41,20 @@ TS="$(date +%Y%m%d-%H%M%S)"
 OUT="$REPO_DIR/benchmarks/results/$ROLE-$TS"
 mkdir -p "$OUT"
 
-echo "# benchmark $ROLE ($MODEL) — $(date)" | tee "$OUT/summary.txt"
-echo "# hardware: $(lscpu | sed -n 's/^Model name:[[:space:]]*/CPU: /p')" | tee -a "$OUT/summary.txt"
+{
+  echo "# benchmark $ROLE ($MODEL) — $(date)"
+  echo "# hardware: $(lscpu | sed -n 's/^Model name:[[:space:]]*/CPU: /p')"
+  echo "# method: llama-bench -m <model> -t <threads> -p 512 -n 128 -r 3"
+  echo
+} | tee "$OUT/summary.txt"
 
-echo "== load time (model -> first token ready)"
-/usr/bin/time -f "load_time_seconds=%e peak_rss_kb=%M" -o "$OUT/load.txt" \
-  "$(command -v llama-server || echo "$REPO_DIR/llama.cpp/build/bin/llama-server")" \
-  --model "$MODEL_PATH" --port 0 --ctx-size 0 --threads 4 2>&1 | grep -m1 "model loaded" || true
-cat "$OUT/load.txt" | tee -a "$OUT/summary.txt"
-
-echo "== token speed (llama-bench, pp512 / tg128, 3 repeats)"
 for t in $THREADS; do
-  echo "--- threads=$t ---" | tee -a "$OUT/summary.txt"
+  echo "== threads=$t"
   "$LLAMA_BENCH_BIN" -m "$MODEL_PATH" -t "$t" -p 512 -n 128 -r 3 2>&1 \
-    | tee -a "$OUT/bench-$t.txt" \
-    | grep -E "pp512|tg128|model_(size|params)" || true
+    | tee -a "$OUT/bench-$t.txt"
+  echo
 done
 
-echo
 echo "Results in: $OUT/"
-echo "Compare with the native-vs-docker run: same binary, model and params."
+echo "Key columns: pp512 (prompt t/s), tg128 (generation t/s), load (ms)."
+echo "Peak RAM while serving: ./scripts/ai start <role> && ./scripts/ai status"

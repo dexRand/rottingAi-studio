@@ -23,8 +23,7 @@ ROLE="${1:-}"
 [ -n "$ROLE" ] || { echo "usage: $0 <role> | status"; echo "roles: coder, general, sysadmin, sysadmin-fast"; exit 2; }
 
 if [ "$ROLE" = "status" ]; then
-  "$REPO_DIR/scripts/status.sh"
-  exit $?
+  exec "$REPO_DIR/scripts/status.sh"
 fi
 
 # resolve role -> variables
@@ -35,10 +34,27 @@ MODEL="${!MODEL_VAR:-}"; ALIAS="${!ALIAS_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THRE
 MODEL_PATH="$MODELS_DIR/$MODEL"
 [ -f "$MODEL_PATH" ] || { echo "model not found: $MODEL_PATH (run ./scripts/download-models.sh $ROLE)" >&2; exit 1; }
 
-if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-  echo "llama-server already running (pid $(cat "$PID_FILE")). Stop it first: ./scripts/stop.sh" >&2
-  exit 1
+# locate the server binary (allow a source build under llama.cpp/build/bin)
+if ! command -v "$LLAMA_SERVER_BIN" >/dev/null 2>&1; then
+  if [ -x "$REPO_DIR/llama.cpp/build/bin/llama-server" ]; then
+    LLAMA_SERVER_BIN="$REPO_DIR/llama.cpp/build/bin/llama-server"
+  else
+    echo "llama-server not found. Install it: ./scripts/install.sh" >&2
+    exit 1
+  fi
 fi
+
+# already running? (verify the PID really is llama-server to avoid stale-PID mistakes)
+if [ -f "$PID_FILE" ]; then
+  PID="$(cat "$PID_FILE")"
+  if kill -0 "$PID" 2>/dev/null && tr '\0' ' ' < "/proc/$PID/cmdline" 2>/dev/null | grep -q llama-server; then
+    echo "llama-server already running (pid $PID). Stop it first: ./scripts/stop.sh" >&2
+    exit 1
+  fi
+fi
+
+API_KEY_ARGS=()
+[ -n "${LLAMA_API_KEY:-}" ] && API_KEY_ARGS=(--api-key "$LLAMA_API_KEY")
 
 echo "== starting llama-server ($ALIAS) on http://$HOST:$PORT"
 echo "   model:  $MODEL ($(du -h "$MODEL_PATH" | cut -f1))"
@@ -52,6 +68,7 @@ nohup "$LLAMA_SERVER_BIN" \
   --ctx-size "$CTX" \
   --threads "$THREADS" \
   --jinja \
+  "${API_KEY_ARGS[@]}" \
   >"$LOG_FILE" 2>&1 &
 echo $! > "$PID_FILE"
 

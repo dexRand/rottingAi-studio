@@ -46,8 +46,11 @@ Config pronta in `config/opencode/opencode.jsonc`.
 | General 8B Q4 | ~10,5 GB | ottima |
 | Sysadmin 12B Q4 | ~13,5 GB | accettabile (chiudere app pesanti) |
 
-## Sicurezza
+## Sicurezza e accesso API
 
-Bind solo `127.0.0.1`, nessun socket Docker ai container AI, nessun mount della
-root, nessun sudo automatico, nessun invio dati all'esterno, approvazione
-esplicita dei comandi via OpenCode `permissions`.
+- Bind configurabile via `LLAMA_HOST` in `.env`: `127.0.0.1` (solo locale) o
+  `0.0.0.0` (raggiungibile dalla LAN/altre app via API OpenAI-compatibile `/v1`).
+- Se esponi sulla LAN, imposta `LLAMA_API_KEY` (auth `Authorization: Bearer`).
+- Nessun socket Docker ai container AI, nessun mount della root, nessun sudo
+  automatico, nessun invio dati all'esterno, approvazione esplicita dei comandi
+  via OpenCode `permissions`.
