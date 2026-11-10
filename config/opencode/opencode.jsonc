@@ -1,0 +1,45 @@
+{
+  // OpenCode V2 configuration for the local llama-server runtime.
+  // Copy to the project root as `opencode.jsonc` (or to ~/.config/opencode/).
+  // llama-server must be running with --jinja (see scripts/start.sh).
+  "$schema": "https://opencode.ai/config.json",
+
+  "providers": {
+    "local": {
+      "name": "Local llama.cpp",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "http://127.0.0.1:8080/v1"
+      },
+      "models": {
+        "coder": {
+          "modelID": "qwen2.5-coder-7b",
+          "name": "Coding (local)",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 16384, "output": 8192 }
+        },
+        "general": {
+          "modelID": "qwen3-8b",
+          "name": "General (local)",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 16384, "output": 8192 }
+        },
+        "sysadmin": {
+          "modelID": "gemma-3-12b",
+          "name": "Sysadmin (local)",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "sysadmin-fast": {
+          "modelID": "qwen2.5-7b",
+          "name": "Sysadmin fast (local)",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 16384, "output": 8192 }
+        }
+      }
+    }
+  },
+
+  // Default model for new sessions (change with /models at any time).
+  "model": "local/coder"
+}

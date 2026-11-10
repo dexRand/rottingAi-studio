@@ -1,0 +1,22 @@
+# Secrets / local config
+.env
+
+# Model files (downloaded separately, never versioned)
+models/*.gguf
+models/*.bin
+models/*.ggml
+!models/README.md
+!models/SHA256SUMS
+
+# Runtime state
+runtime/
+*.pid
+*.log
+
+# Benchmark output
+benchmarks/results/
+
+# Local builds
+llama.cpp/
+*.o
+build/
