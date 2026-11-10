@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 # Start llama-server on-demand for a role. Loads ONE model at a time.
-#   ./scripts/start.sh <role>   (coder | general | sysadmin | sysadmin-fast)
+#   ./scripts/start.sh <role>   (coder | general | sysadmin | sysadmin-heavy)
 #   ./scripts/start.sh status
 # ============================================================================
 set -euo pipefail
@@ -20,7 +20,7 @@ LOG_FILE="$RUNTIME_DIR/llama-server.log"
 mkdir -p "$RUNTIME_DIR"
 
 ROLE="${1:-}"
-[ -n "$ROLE" ] || { echo "usage: $0 <role> | status"; echo "roles: coder, general, sysadmin, sysadmin-fast"; exit 2; }
+[ -n "$ROLE" ] || { echo "usage: $0 <role> | status"; echo "roles: coder, general, sysadmin, sysadmin-heavy"; exit 2; }
 
 if [ "$ROLE" = "status" ]; then
   exec "$REPO_DIR/scripts/status.sh"

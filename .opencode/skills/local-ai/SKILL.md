@@ -49,7 +49,7 @@ How to operate the rottingAi-studio local AI stack on this machine.
 
 Con `config/opencode/opencode.jsonc` copiato nella root del progetto e
 `llama-server` in esecuzione con `--jinja`, i modelli sono selezionabili come
-`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-fast`.
+`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-heavy`.
 
 ## In caso di problemi
 

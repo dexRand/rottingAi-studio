@@ -97,7 +97,7 @@ non sono mai versionati. Quantizzazioni e fonti in `models/README.md`.
 
 Copia `config/opencode/opencode.jsonc` nella root del progetto (o in
 `~/.config/opencode/`) e avvia `./ai start <role>`. I modelli appaiono come
-`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-fast` con tool
+`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-heavy` con tool
 calling abilitato.
 
 ## Accesso API

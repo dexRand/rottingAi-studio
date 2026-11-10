@@ -3,7 +3,7 @@
 # Download the GGUF models (never versioned). Run from anywhere.
 #   ./scripts/download-models.sh [--all | <role>]
 #
-# Roles: coder, general, sysadmin, sysadmin-fast
+# Roles: coder, general, sysadmin, sysadmin-heavy
 # Uses `huggingface-cli` when available (verifies LFS integrity); falls back
 # to curl with resume support.
 # ============================================================================
@@ -18,8 +18,8 @@ mkdir -p "$MODELS_DIR"
 declare -A SPECS=(
   ["coder"]="Qwen/Qwen2.5-Coder-7B-Instruct-GGUF|qwen2.5-coder-7b-instruct-q4_k_m.gguf"
   ["general"]="Qwen/Qwen3-8B-GGUF|Qwen3-8B-Q4_K_M.gguf"
-  ["sysadmin"]="bartowski/google_gemma-3-12b-it-GGUF|google_gemma-3-12b-it-Q4_K_M.gguf"
-  ["sysadmin-fast"]="bartowski/Qwen2.5-7B-Instruct-GGUF|Qwen2.5-7B-Instruct-Q5_K_M.gguf"
+  ["sysadmin"]="bartowski/Qwen2.5-7B-Instruct-GGUF|Qwen2.5-7B-Instruct-Q5_K_M.gguf"
+  ["sysadmin-heavy"]="bartowski/google_gemma-3-12b-it-GGUF|google_gemma-3-12b-it-Q4_K_M.gguf"
 )
 
 wanted="${1:---all}"
@@ -60,7 +60,7 @@ run() {
 }
 
 if [ "$wanted" != "--all" ] && [ -z "${SPECS[$wanted]:-}" ]; then
-  echo "usage: $0 [--all | coder | general | sysadmin | sysadmin-fast]" >&2
+  echo "usage: $0 [--all | coder | general | sysadmin | sysadmin-heavy]" >&2
   exit 2
 fi
 

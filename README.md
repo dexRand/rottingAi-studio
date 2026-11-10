@@ -95,7 +95,7 @@ never versioned. Quant types and sources are documented in `models/README.md`.
 
 Copy `config/opencode/opencode.jsonc` to your project root (or
 `~/.config/opencode/`) and start `./ai start <role>`. The models appear as
-`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-fast` with tool
+`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-heavy` with tool
 calling enabled.
 
 ## API access
