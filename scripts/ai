@@ -17,6 +17,7 @@
 #   ./ai benchmark <role> [threads]
 #   ./ai upgrade [all|runtime|skills|check]
 #   ./ai healthcheck        integrity + health
+#   ./ai test [--skills-only] [--models ROLES...]   fleet orchestrator
 #   ./ai help
 # ============================================================================
 set -euo pipefail
@@ -48,6 +49,7 @@ Usage: ./ai <command> [args]
   benchmark <role> [threads]
   upgrade [all|runtime|skills|check]
   healthcheck        integrity + health
+  test [--skills-only] [--models ROLES...]   fleet orchestrator
   help               this help
 
 Roles: coder | general | fast | ctf | sysadmin | sysadmin-heavy
@@ -114,6 +116,7 @@ case "$cmd" in
   benchmark)  "$REPO_DIR/scripts/benchmark.sh" "$@" ;;
   upgrade)    "$REPO_DIR/scripts/upgrade.sh" "${@:-all}" ;;
   healthcheck) "$REPO_DIR/scripts/healthcheck.sh" ;;
+  test)       exec python3 "$REPO_DIR/scripts/orchestrate.py" "$@" ;;
   help|--help|-h) usage ;;
   *)
     echo "unknown command: $cmd" >&2
