@@ -1,62 +1,156 @@
+<!-- English | [Italiano](README.it.md) -->
 # rottingAi-studio
 
-Ecosistema AI locale minimale e riproducibile per **CPU-only, 16 GB RAM, Arch/CachyOS**.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Inference: CPU-only](https://img.shields.io/badge/inference-CPU--only-important)](https://github.com/ggml-org/llama.cpp)
+[![OS: CachyOS / Arch](https://img.shields.io/badge/OS-CachyOS%20%2F%20Arch-blue)](https://cachyos.org/)
 
-**Filosofia:** llama.cpp nativo, nessun daemon, un modello alla volta, reattività del PC al primo posto. Docker solo per servizi ausiliari opzionali (spenti di default).
+A minimal, reproducible **local AI stack** for CPU-only machines (16 GB RAM, AVX2),
+built on **llama.cpp** and **OpenCode**. No daemons, no idle services, one model at
+a time — the machine stays responsive while you work.
 
-## Requisiti hardware di riferimento
+> **TL;DR** — three GGUF models (coding / general / sysadmin) served on demand by a
+> native `llama-server`, driven by a small `./ai` CLI, and usable from OpenCode and
+> any OpenAI-compatible client.
 
-- CPU Intel quad-core con AVX2 (testato su i5-8350U)
-- 16 GB RAM (zram come swap)
-- GPU integrata **non** usata per l'inferenza
+---
 
-## Struttura
+## Why this exists
+
+Local LLM inference is usually either heavy (Ollama daemon, Docker, GPU runtimes)
+or generic advice that doesn't fit a specific machine. This repo is the opposite:
+a **native, on-demand** setup tuned for a real constraint — a 4-core/8-thread CPU
+with AVX2 and 16 GB of RAM — where **desktop responsiveness is the top priority**.
+
+- Load a model only when you need it, unload it instantly (mmap release).
+- One model at a time, bounded threads, moderate context.
+- No always-on services, no container overhead for inference.
+- Fully offline after the first download.
+
+## Features
+
+- 🧠 **Native llama.cpp** (`llama-server` + `llama-cli`), AVX2/FMA/F16C build.
+- 🤖 **Three role-tuned models** + a fast alternative (see [Models](#models)).
+- 🖥️ **`./ai` CLI** — start/stop/status/chat/benchmark/upgrade in one command.
+- 🔌 **OpenAI-compatible API** on `/v1` (LAN-reachable, optional Bearer auth).
+- 🧩 **28 skills** vendored offline (find-skills + addyosmani dev skills + 2 custom).
+- 🔧 **OpenCode V2** integration with tool calling (`--jinja`).
+- 📦 Optional Docker Compose for GUI/RAG — all off by default.
+- ✅ Checksum-verified model downloads, reproducible benchmarks.
+
+## Requirements
+
+- Linux x86_64 with **AVX2** (any modern Intel/AMD CPU)
+- **16 GB RAM** (zram swap recommended)
+- `git`, `cmake`, `make`, a C++ compiler (`gcc`/`clang`) to build llama.cpp
+- Arch / CachyOS (tested); any Linux with the above works too
+
+## Quick start
+
+```bash
+git clone https://github.com/dexRand/rottingAi-studio.git
+cd rottingAi-studio
+
+cp .env.example .env                # adjust host / port / API key if needed
+./scripts/install.sh native         # build llama.cpp with -march=native
+./scripts/download-models.sh --all  # download the 4 GGUFs (with checksums)
+
+./scripts/ai chat                   # start + open the built-in web UI (general)
+./scripts/ai code                   # coding model (Qwen2.5-Coder-7B)
+./scripts/ai sysadmin               # sysadmin model (Gemma 3 12B)
+./scripts/ai stop                   # stop and free the RAM
+```
+
+## Usage
+
+```text
+./ai chat [role]        start server (if needed) + open the built-in web UI
+./ai code               coding model (Qwen2.5-Coder-7B)
+./ai sysadmin           sysadmin model (Gemma 3 12B)
+./ai sysadmin-fast      fast sysadmin (Qwen2.5-7B Q5)
+./ai cli [role]         terminal chat via llama-cli (no server)
+./ai start <role>       start llama-server only
+./ai stop               stop and free RAM
+./ai status             runtime + model + RAM status
+./ai logs               follow the server log
+./ai download [--all|<role>]
+./ai benchmark <role> [threads]
+./ai upgrade [all|runtime|skills|check]
+./ai healthcheck        integrity + health
+```
+
+## Models
+
+| Role | Model | Quant | Size | RAM | Use |
+|---|---|---|---|---|---|
+| `coder` | Qwen2.5-Coder-7B-Instruct | Q4_K_M | 4.68 GB | ~5.5 GB | coding, OpenCode backend |
+| `general` | Qwen3-8B | Q4_K_M | 5.03 GB | ~6 GB | Italian, reasoning, chat |
+| `sysadmin` | Gemma 3 12B | Q4_K_M | 7.30 GB | ~9 GB | deep technical, 128K context |
+| `sysadmin-fast` | Qwen2.5-7B-Instruct | Q5_K_M | 5.44 GB | ~6 GB | fast alternative |
+
+Models live **outside the repo** (`MODELS_DIR`, default `~/local-ai/models`) and are
+never versioned. Quant types and sources are documented in `models/README.md`.
+
+## OpenCode integration
+
+Copy `config/opencode/opencode.jsonc` to your project root (or
+`~/.config/opencode/`) and start `./ai start <role>`. The models appear as
+`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-fast` with tool
+calling enabled.
+
+## API access
+
+`llama-server` exposes an OpenAI-compatible API at `/v1`. By default it binds to
+`127.0.0.1`; set `LLAMA_HOST=0.0.0.0` in `.env` to make it reachable from the LAN,
+and `LLAMA_API_KEY` to protect it with `Authorization: Bearer`.
+
+```bash
+curl http://127.0.0.1:8080/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"qwen3-8b","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+## Skills
+
+28 skills are vendored offline in `.opencode/skills/`:
+`find-skills` (discover/install skills from `skills.sh`), 25 development skills from
+`addyosmani/agent-skills`, and two custom ones (`local-ai`, `arch-sysadmin`).
+
+## Upgrading & maintenance
+
+```bash
+./ai upgrade          # repo + llama.cpp + vendored skills
+./ai upgrade check    # versions / status (no changes)
+./ai healthcheck      # model integrity + endpoint + RAM
+```
+
+See `docs/upgrading.md` for the full picture (including pinning llama.cpp/models).
+
+## Project structure
 
 ```
 rottingAi-studio/
-├── docker-compose.yml        # solo servizi opzionali (profilo gui/rag/web-search)
-├── .env.example              # copia in .env e adatta
+├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai
 ├── config/
-│   ├── llama.cpp/roles.conf  # preset per ruolo (modello, alias, ctx)
-│   └── opencode/opencode.jsonc
-├── scripts/                  # install, download, start/stop/status, benchmark, ai
-├── models/                   # istruzioni + checksum (i GGUF NON sono in repo)
+│   ├── llama.cpp/roles.conf     # role → model/alias/context presets
+│   └── opencode/opencode.jsonc  # OpenCode local provider
 ├── .opencode/
-│   ├── skills/               # 28 skill (find-skills + addyosmani dev + 2 custom)
-│   └── references/           # checklist condivise per le skill
-├── docs/                     # architecture, models, troubleshooting
-└── tests/
+│   ├── skills/       # 28 vendored skills
+│   └── references/   # shared checklists for the skills
+├── models/           # download instructions + checksums (GGUFs not versioned)
+├── docs/             # architecture, models, upgrading, troubleshooting
+├── tests/            # Proxmox exam + runner
+├── docker-compose.yml# optional services (GUI/RAG) — off by default
+└── benchmarks/results/  # measured benchmark output
 ```
 
-## Avvio rapido
+## Security
 
-```bash
-cp .env.example .env
-./scripts/install.sh native        # build llama.cpp (AVX2)  [dopo tua approvazione]
-./scripts/download-models.sh --all  # scarica i 4 GGUF + checksum
-./scripts/ai chat                  # web UI integrata (general)
-./scripts/ai code                  # coding
-./scripts/ai sysadmin              # sysadmin
-./scripts/ai stop                  # ferma e libera la RAM
-./scripts/ai upgrade check         # versioni/stato componenti (manutenzione)
-```
+- Binds to `127.0.0.1` by default; LAN exposure is opt-in via `LLAMA_HOST`.
+- No Docker socket mounted into AI containers, no root host mounts, no automatic
+  `sudo`, no data sent off-machine, explicit approval for agent commands.
 
-## Integrazione OpenCode
+## License
 
-Copia `config/opencode/opencode.jsonc` nella root del progetto (o in `~/.config/opencode/`) e avvia `./scripts/ai start <role>`. I modelli appaiono come `local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-fast`.
-
-## Skill
-
-Il progetto include skill OpenCode vendored (offline) in `.opencode/skills/`:
-due custom (`local-ai`, `arch-sysadmin`), `find-skills` (scoperta/installazione
-skill dall'ecosistema `skills.sh`) e le 25 skill di sviluppo di
-`addyosmani/agent-skills` (TDD, code review, debugging, security, performance,
-ecc.). Elenco e licenze in `.opencode/skills/README.md`.
-
-## API
-
-`llama-server` espone un'API OpenAI-compatibile su `/v1`. Di default è
-`127.0.0.1`; per renderla raggiungibile dalla LAN/altre app imposta
-`LLAMA_HOST=0.0.0.0` in `.env` (e `LLAMA_API_KEY` per proteggerla con Bearer auth).
-
-Vedi `docs/` per dettagli su architettura, scelta dei modelli e troubleshooting.
+[MIT](LICENSE) © 2026 dexRand. Vendored skills retain their own MIT licenses
+(see `.opencode/skills/README.md`).
