@@ -12,6 +12,10 @@ Tutte le skill qui sotto sono vendored (copia locale) per funzionare **offline**
 
 ## Elenco skill
 
+### Custom di questo progetto
+- **local-ai** — come operare il runtime locale (`./ai`, ruoli, modelli, RAM, OpenCode)
+- **arch-sysadmin** — amministrazione prudente Arch/CachyOS (pacman, systemd, btrfs, zram, rete)
+
 ### Scoperta skill
 - **find-skills** — cerca e installa nuove skill dall'ecosistema `skills.sh` (`npx skills`).
 
@@ -46,7 +50,7 @@ Tutte le skill qui sotto sono vendored (copia locale) per funzionare **offline**
 
 ```
 .opencode/
-├── skills/          # 26 skill (SKILL.md + references/scripts locali)
+├── skills/          # 28 skill (SKILL.md + references/scripts locali)
 │   ├── find-skills/
 │   ├── code-review-and-quality/
 │   └── ...

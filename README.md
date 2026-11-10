@@ -22,7 +22,7 @@ rottingAi-studio/
 ├── scripts/                  # install, download, start/stop/status, benchmark, ai
 ├── models/                   # istruzioni + checksum (i GGUF NON sono in repo)
 ├── .opencode/
-│   ├── skills/               # 26 skill (find-skills + addyosmani dev skills)
+│   ├── skills/               # 28 skill (find-skills + addyosmani dev + 2 custom)
 │   └── references/           # checklist condivise per le skill
 ├── docs/                     # architecture, models, troubleshooting
 └── tests/
