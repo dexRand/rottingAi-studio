@@ -20,6 +20,10 @@ tool calling nativo, italiano, licenze permissive.
    ~2,74 GB, ~10-15 t/s, tool calling nativo (template corretto da Unsloth).
    Su CPU i quant dynamic Unsloth (UD-*) migliorano la qualità-per-bit, non la
    velocità: per il `fast` il Q4_K_M standard è la scelta ottimale.
+5. **CTF — WhiteRabbitNeo-2.5-Qwen-2.5-Coder-7B Q4_K_M** (~4,7 GB). Fine-tune
+   dedicato alla cybersecurity (dati offensivi *e* difensivi) su base
+   Qwen2.5-Coder-7B: helper per CTF e pentesting autorizzato, buono anche a
+   scrivere exploit/script.
 
 ## Perché NON altri runtime/modelli
 

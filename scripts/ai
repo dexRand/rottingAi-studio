@@ -5,6 +5,7 @@
 #   ./ai chat [role]        start server (if needed) + open the built-in web UI
 #   ./ai code               coding model (Qwen2.5-Coder-7B)
 #   ./ai fast               superfast 4B model (Qwen3.5-4B)
+#   ./ai ctf                security helper (WhiteRabbitNeo-2.5)
 #   ./ai sysadmin           sysadmin model (Qwen2.5-7B Q5)
 #   ./ai sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
 #   ./ai cli [role]         terminal chat via llama-cli (no server)
@@ -35,6 +36,7 @@ Usage: ./ai <command> [args]
   chat [role]        start server (if needed) + open the built-in web UI
   code               coding model (Qwen2.5-Coder-7B)
   fast               superfast 4B model (Qwen3.5-4B)
+  ctf                security helper (WhiteRabbitNeo-2.5)
   sysadmin           sysadmin model (Qwen2.5-7B Q5)
   sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
   cli [role]         terminal chat via llama-cli (no server)
@@ -48,7 +50,7 @@ Usage: ./ai <command> [args]
   healthcheck        integrity + health
   help               this help
 
-Roles: coder | general | fast | sysadmin | sysadmin-heavy
+Roles: coder | general | fast | ctf | sysadmin | sysadmin-heavy
 EOF
 }
 
@@ -85,6 +87,7 @@ case "$cmd" in
     ;;
   code)          ensure_server coder; open_browser ;;
   fast)          ensure_server fast; open_browser ;;
+  ctf)           ensure_server ctf; open_browser ;;
   sysadmin)       ensure_server sysadmin; open_browser ;;
   sysadmin-heavy) ensure_server sysadmin-heavy; open_browser ;;
   cli)

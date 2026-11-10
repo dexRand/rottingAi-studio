@@ -32,6 +32,12 @@
           "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
           "limit": { "context": 16384, "output": 8192 }
         },
+        "ctf": {
+          "modelID": "whiterabbitneo-7b",
+          "name": "CTF (local)",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 16384, "output": 8192 }
+        },
         "sysadmin": {
           "modelID": "qwen2.5-7b",
           "name": "Sysadmin (local)",
