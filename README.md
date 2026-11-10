@@ -86,7 +86,7 @@ cp .env.example .env                # adjust host / port / API key if needed
 | Role | Model | Quant | Size | RAM | Use |
 |---|---|---|---|---|---|
 | `coder` | Qwen2.5-Coder-7B-Instruct | Q4_K_M | 4.68 GB | ~5.5 GB | coding, OpenCode backend |
-| `general` | Qwen3-8B | Q4_K_M | 5.03 GB | ~6 GB | Italian, reasoning, chat |
+| `general` | Qwen3-8B | Q4_K_M | 5.03 GB | ~6 GB | multilingual, reasoning, chat |
 | `fast` | Qwen3.5-4B | Q4_K_M | 2.74 GB | ~3.5 GB | superfast, quick tasks |
 | `ctf` | WhiteRabbitNeo-2.5 (Qwen2.5-Coder-7B) | Q4_K_M | 4.68 GB | ~5.5 GB | security / CTF / pentesting |
 | `sysadmin` | Qwen2.5-7B-Instruct | Q5_K_M | 5.44 GB | ~6 GB | technical, fast |
