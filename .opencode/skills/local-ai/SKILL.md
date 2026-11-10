@@ -17,6 +17,7 @@ How to operate the rottingAi-studio local AI stack on this machine.
 |---|---|---|---|---|
 | `coder` | Qwen2.5-Coder-7B-Instruct Q4_K_M | `qwen2.5-coder-7b` | ~5,5 GB | coding, backend OpenCode |
 | `general` | Qwen3-8B Q4_K_M | `qwen3-8b` | ~6 GB | italiano, ragionamento |
+| `fast` | Qwen3.5-4B Q4_K_M | `qwen3.5-4b` | ~3,5 GB | superfast, task veloci |
 | `sysadmin` | Qwen2.5-7B-Instruct Q5_K_M | `qwen2.5-7b` | ~6 GB | tecnico, veloce (default) |
 | `sysadmin-heavy` | Gemma 3 12B Q4_K_M | `gemma-3-12b` | ~9 GB | opzionale: profondità, ctx 128K |
 
@@ -25,6 +26,7 @@ How to operate the rottingAi-studio local AI stack on this machine.
 ```bash
 ./scripts/ai chat [role]      # avvia il server + apre la web UI
 ./scripts/ai code             # modello coding
+./scripts/ai fast             # superfast 4B (Qwen3.5-4B)
 ./scripts/ai sysadmin         # modello sysadmin (7B, veloce)
 ./scripts/ai sysadmin-heavy   # sysadmin pesante (12B, opzionale)
 ./scripts/ai start <role>     # solo llama-server

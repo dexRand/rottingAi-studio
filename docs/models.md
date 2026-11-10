@@ -16,6 +16,10 @@ tool calling nativo, italiano, licenze permissive.
    questa CPU (~2,3 t/s misurati).
    - Opzionale "pesante": **Gemma 3 12B** (contesto 128K per log lunghi), se la
      profondità conta più della velocità.
+4. **Fast — Qwen3.5-4B Q4_K_M** (Apache 2.0, GGUF Unsloth). Il "superfast":
+   ~2,74 GB, ~10-15 t/s, tool calling nativo (template corretto da Unsloth).
+   Su CPU i quant dynamic Unsloth (UD-*) migliorano la qualità-per-bit, non la
+   velocità: per il `fast` il Q4_K_M standard è la scelta ottimale.
 
 ## Perché NON altri runtime/modelli
 
