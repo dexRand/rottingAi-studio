@@ -94,7 +94,8 @@ case "$cmd" in
     MODEL="${!MODEL_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THREADS="${!THREADS_VAR:-4}"
     [ -n "$MODEL" ] || { echo "unknown role: $role" >&2; exit 2; }
     [ -f "$MODELS_DIR/$MODEL" ] || { echo "model not found: $MODELS_DIR/$MODEL" >&2; exit 1; }
-    exec "$LLAMA_CLI_BIN" -m "$MODELS_DIR/$MODEL" -c "$CTX" -t "$THREADS" -cnv
+    exec "$LLAMA_CLI_BIN" -m "$MODELS_DIR/$MODEL" -c "$CTX" -t "$THREADS" -cnv \
+      -sys "$REPO_DIR/config/system-prompts/terse.txt"
     ;;
   start)      "$REPO_DIR/scripts/start.sh" "$@" ;;
   stop)       "$REPO_DIR/scripts/stop.sh" ;;

@@ -27,8 +27,8 @@ if [ "$ROLE" = "status" ]; then
 fi
 
 # resolve role -> variables
-MODEL_VAR="${ROLE^^}_MODEL"; ALIAS_VAR="${ROLE^^}_ALIAS"; CTX_VAR="${ROLE^^}_CTX"; THREADS_VAR="THREADS_${ROLE^^}"
-MODEL="${!MODEL_VAR:-}"; ALIAS="${!ALIAS_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THREADS="${!THREADS_VAR:-4}"
+MODEL_VAR="${ROLE^^}_MODEL"; ALIAS_VAR="${ROLE^^}_ALIAS"; CTX_VAR="${ROLE^^}_CTX"; THREADS_VAR="THREADS_${ROLE^^}"; REASONING_VAR="${ROLE^^}_REASONING"
+MODEL="${!MODEL_VAR:-}"; ALIAS="${!ALIAS_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THREADS="${!THREADS_VAR:-4}"; REASONING="${!REASONING_VAR:-auto}"
 [ -n "$MODEL" ] || { echo "unknown role: $ROLE" >&2; exit 2; }
 
 MODEL_PATH="$MODELS_DIR/$MODEL"
@@ -68,6 +68,7 @@ nohup "$LLAMA_SERVER_BIN" \
   --ctx-size "$CTX" \
   --threads "$THREADS" \
   --jinja \
+  --reasoning "$REASONING" \
   "${API_KEY_ARGS[@]}" \
   >"$LOG_FILE" 2>&1 &
 echo $! > "$PID_FILE"
