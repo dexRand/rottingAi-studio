@@ -8,13 +8,20 @@ Tutte le skill qui sotto sono vendored (copia locale) per funzionare **offline**
 | Skill | Origine | Licenza |
 |---|---|---|
 | `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills/tree/main/skills/find-skills) | MIT |
-| le altre 25 (dev) | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | MIT (© 2025 Addy Osmani) |
+| 25 dev | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | MIT (© 2025 Addy Osmani) |
+| 11 CTF | [ljagiello/ctf-skills](https://github.com/ljagiello/ctf-skills) | MIT |
 
 ## Elenco skill
 
 ### Custom di questo progetto
 - **local-ai** — come operare il runtime locale (`./ai`, ruoli, modelli, RAM, OpenCode)
 - **arch-sysadmin** — amministrazione prudente Arch/CachyOS (pacman, systemd, btrfs, zram, rete)
+- **ctf-toolbox** — guidare StegSuite/CTF Toolbox via MCP e CLI `./ctf`
+- **docker** — amministrazione e debugging Docker/Compose
+- **proxmox** — amministrazione e troubleshooting Proxmox VE
+
+### Sicurezza / CTF (ljagiello/ctf-skills)
+- **ctf-web, ctf-crypto, ctf-pwn, ctf-reverse, ctf-forensics, ctf-osint, ctf-misc, ctf-malware, ctf-ai-ml, ctf-similar-search, ctf-writeup**
 
 ### Scoperta skill
 - **find-skills** — cerca e installa nuove skill dall'ecosistema `skills.sh` (`npx skills`).
@@ -50,7 +57,7 @@ Tutte le skill qui sotto sono vendored (copia locale) per funzionare **offline**
 
 ```
 .opencode/
-├── skills/          # 28 skill (SKILL.md + references/scripts locali)
+├── skills/          # 42 skill (SKILL.md + references/scripts locali)
 │   ├── find-skills/
 │   ├── code-review-and-quality/
 │   └── ...
