@@ -1,11 +1,11 @@
 ---
 name: ctf-toolbox
-description: Drive the CTF Toolbox (StegSuite + web tools) for CTF and steg/forensics work — analyze files, autosolve challenges, crack passwords, read reports — via its MCP server or the ./ctf CLI. Use when working in the CTF repo (~/__Github/CTF) or on a challenge/steg file.
+description: Drive the CTF Toolbox (StegSuite + web tools) for CTF and steg/forensics work — analyze files, autosolve challenges, crack passwords, read reports — via its MCP server or the ./ctf CLI. Use when working in the CTF repo (~/Progetti/ctf-docker) or on a challenge/steg file.
 ---
 
 # CTF Toolbox (StegSuite)
 
-How to drive the CTF Toolbox (repo at `~/__Github/CTF`) as an agent.
+How to drive the CTF Toolbox (repo at `~/Progetti/ctf-docker`) as an agent.
 
 ## Two ways to interact
 
@@ -16,6 +16,8 @@ How to drive the CTF Toolbox (repo at `~/__Github/CTF`) as an agent.
 
 ## Typical flow (MCP)
 
+0. Simplest: copy the file into `~/Progetti/ctf-docker/data/inbox/`, then
+   `analyze(paths=["file"], wait_s=300)` → status + `top_flags` in one call.
 1. `create_ctf` (name, flag_format) — start a CTF event.
 2. `add_challenge` (ctf_id, name, category, files/urls, start=true) — adds and analyzes.
    Or `analyze` (name, files/urls) for a standalone project.
@@ -30,14 +32,15 @@ How to drive the CTF Toolbox (repo at `~/__Github/CTF`) as an agent.
 `list_ctfs`, `create_ctf`, `ctf_scoreboard`, `add_challenge`, `autosolve`,
 `analyze`, `project_status`, `get_flags`, `get_report`, `get_transcript`,
 `read_file`, `list_tools`, `run_tools`, `locked_files`, `crack`, `crack_jobs`,
-`list_wordlists`, `set_challenge`, `toolbox_services`.
+`list_wordlists`, `set_challenge`, `toolbox_services`, `list_projects`, `list_inbox`.
+Answers are capped (~12k chars): `get_transcript`/`get_report` are paged with `offset`.
 
 ## Other web tools (`toolbox_services`)
 
 CyberChef, ZAP (proxy), Wireshark, rev sandbox (pwntools + qemu + ttyd), and more.
 All bound to `127.0.0.1`, ports `19000+` (see `compose.yaml` / `.env`).
 
-## CLI (run from `~/__Github/CTF`)
+## CLI (run from `~/Progetti/ctf-docker`)
 
 ```bash
 ./ctf up          # core services
@@ -62,7 +65,9 @@ All bound to `127.0.0.1`, ports `19000+` (see `compose.yaml` / `.env`).
     "servers": {
       "stegsuite": {
         "type": "remote",
-        "url": "http://127.0.0.1:19014/api/v1/mcp"
+        "url": "http://127.0.0.1:19014/api/v1/mcp",
+        "oauth": false,
+        "codemode": false
       }
     }
   }
