@@ -141,7 +141,7 @@ rottingAi-studio/
 │   └── references/   # checklist condivise per le skill
 ├── models/           # istruzioni download + checksum (GGUF non versionati)
 ├── docs/             # architecture, models, upgrading, troubleshooting
-├── tests/            # esame Proxmox + runner
+├── tests/            # script di test
 ├── docker-compose.yml# servizi opzionali (GUI/RAG) — spenti di default
 └── benchmarks/results/  # output benchmark misurati
 ```

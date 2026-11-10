@@ -139,7 +139,7 @@ rottingAi-studio/
 │   └── references/   # shared checklists for the skills
 ├── models/           # download instructions + checksums (GGUFs not versioned)
 ├── docs/             # architecture, models, upgrading, troubleshooting
-├── tests/            # Proxmox exam + runner
+├── tests/            # test scripts
 ├── docker-compose.yml# optional services (GUI/RAG) — off by default
 └── benchmarks/results/  # measured benchmark output
 ```

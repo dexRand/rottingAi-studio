@@ -20,3 +20,7 @@ benchmarks/results/
 llama.cpp/
 *.o
 build/
+
+# Internal Proxmox exam (kept local, not part of the repo)
+tests/proxmox-exam.md
+tests/run-exam.py
