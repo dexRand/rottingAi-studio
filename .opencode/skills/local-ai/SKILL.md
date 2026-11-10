@@ -17,16 +17,16 @@ How to operate the rottingAi-studio local AI stack on this machine.
 |---|---|---|---|---|
 | `coder` | Qwen2.5-Coder-7B-Instruct Q4_K_M | `qwen2.5-coder-7b` | ~5,5 GB | coding, backend OpenCode |
 | `general` | Qwen3-8B Q4_K_M | `qwen3-8b` | ~6 GB | italiano, ragionamento |
-| `sysadmin` | Gemma 3 12B Q4_K_M | `gemma-3-12b` | ~9 GB | profondo, ctx 128K, lento |
-| `sysadmin-fast` | Qwen2.5-7B-Instruct Q5_K_M | `qwen2.5-7b` | ~6 GB | alternativa veloce |
+| `sysadmin` | Qwen2.5-7B-Instruct Q5_K_M | `qwen2.5-7b` | ~6 GB | tecnico, veloce (default) |
+| `sysadmin-heavy` | Gemma 3 12B Q4_K_M | `gemma-3-12b` | ~9 GB | opzionale: profondità, ctx 128K |
 
 ## Commands (dalla root della repo)
 
 ```bash
 ./scripts/ai chat [role]      # avvia il server + apre la web UI
 ./scripts/ai code             # modello coding
-./scripts/ai sysadmin         # modello sysadmin (12B)
-./scripts/ai sysadmin-fast    # sysadmin veloce
+./scripts/ai sysadmin         # modello sysadmin (7B, veloce)
+./scripts/ai sysadmin-heavy   # sysadmin pesante (12B, opzionale)
 ./scripts/ai start <role>     # solo llama-server
 ./scripts/ai stop             # ferma e libera la RAM
 ./scripts/ai status           # in esecuzione? modello? RAM?
@@ -41,8 +41,8 @@ How to operate the rottingAi-studio local AI stack on this machine.
 - Carica **un solo modello alla volta** (`start` rifiuta un secondo).
 - Mantieni `--threads` a 4 (core fisici; l'SMT raramente aiuta e scalda).
 - `stop` libera subito la RAM (rilascio mmap). Nessun daemon a riposo.
-- Non caricare il 12B con app/Docker pesanti attivi: preferisci
-  `sysadmin-fast` se il sistema è occupato.
+- Non caricare il 12B (`sysadmin-heavy`) con app/Docker pesanti attivi:
+  il default `sysadmin` (7B) è già veloce.
 - Bind solo `127.0.0.1`: mai esporre la porta pubblicamente.
 
 ## Integrazione OpenCode

@@ -27,16 +27,16 @@
           "limit": { "context": 16384, "output": 8192 }
         },
         "sysadmin": {
-          "modelID": "gemma-3-12b",
+          "modelID": "qwen2.5-7b",
           "name": "Sysadmin (local)",
           "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
-          "limit": { "context": 32768, "output": 8192 }
-        },
-        "sysadmin-fast": {
-          "modelID": "qwen2.5-7b",
-          "name": "Sysadmin fast (local)",
-          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
           "limit": { "context": 16384, "output": 8192 }
+        },
+        "sysadmin-heavy": {
+          "modelID": "gemma-3-12b",
+          "name": "Sysadmin heavy (local)",
+          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
+          "limit": { "context": 32768, "output": 8192 }
         }
       }
     }

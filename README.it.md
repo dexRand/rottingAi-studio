@@ -68,8 +68,8 @@ cp .env.example .env                # regola host / porta / API key se serve
 ```text
 ./ai chat [role]        avvia il server (se serve) + apre la web UI integrata
 ./ai code               modello coding (Qwen2.5-Coder-7B)
-./ai sysadmin           modello sysadmin (Gemma 3 12B)
-./ai sysadmin-fast      sysadmin veloce (Qwen2.5-7B Q5)
+./ai sysadmin           modello sysadmin (Qwen2.5-7B Q5)
+./ai sysadmin-heavy     sysadmin pesante opzionale (Gemma 3 12B)
 ./ai cli [role]         chat da terminale via llama-cli (senza server)
 ./ai start <role>       avvia solo llama-server
 ./ai stop               ferma e libera la RAM
@@ -87,8 +87,8 @@ cp .env.example .env                # regola host / porta / API key se serve
 |---|---|---|---|---|---|
 | `coder` | Qwen2.5-Coder-7B-Instruct | Q4_K_M | 4,68 GB | ~5,5 GB | coding, backend OpenCode |
 | `general` | Qwen3-8B | Q4_K_M | 5,03 GB | ~6 GB | italiano, ragionamento, chat |
-| `sysadmin` | Gemma 3 12B | Q4_K_M | 7,30 GB | ~9 GB | tecnico profondo, contesto 128K |
-| `sysadmin-fast` | Qwen2.5-7B-Instruct | Q5_K_M | 5,44 GB | ~6 GB | alternativa veloce |
+| `sysadmin` | Qwen2.5-7B-Instruct | Q5_K_M | 5,44 GB | ~6 GB | tecnico, veloce |
+| `sysadmin-heavy` | Gemma 3 12B | Q4_K_M | 7,30 GB | ~9 GB | opzionale: profondità, contesto 128K |
 
 I modelli vivono **fuori dalla repo** (`MODELS_DIR`, default `~/local-ai/models`) e
 non sono mai versionati. Quantizzazioni e fonti in `models/README.md`.

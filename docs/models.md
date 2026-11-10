@@ -11,9 +11,11 @@ tool calling nativo, italiano, licenze permissive.
 2. **General / Italiano — Qwen3-8B** (Apache 2.0). Miglior piccolo generalista
    2026: 100+ lingue (italiano ottimo), ragionamento ibrido, tool calling tra i
    migliori della categoria.
-3. **Sysadmin — Gemma 3 12B** (Gemma ToU). Profondità tecnica + contesto 128K
-   (analisi log). È il modello "pesante": ~3-4 t/s.
-   - Alternativa veloce: **Qwen2.5-7B-Instruct Q5_K_M** (~7 t/s).
+3. **Sysadmin — Qwen2.5-7B-Instruct Q5_K_M** (Apache 2.0). Tecnico e reattivo
+   (~6-7 t/s). Scelto come default dopo che il 12B è risultato troppo lento su
+   questa CPU (~2,3 t/s misurati).
+   - Opzionale "pesante": **Gemma 3 12B** (contesto 128K per log lunghi), se la
+     profondità conta più della velocità.
 
 ## Perché NON altri runtime/modelli
 
