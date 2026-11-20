@@ -16,8 +16,8 @@ runtime/
 # Benchmark output
 benchmarks/results/
 
-# Local builds
-llama.cpp/
+# Local builds (root only: must NOT hide config/llama.cpp/)
+/llama.cpp/
 *.o
 build/
 
