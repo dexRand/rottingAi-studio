@@ -27,16 +27,42 @@ with AVX2 and 16 GB of RAM — where **desktop responsiveness is the top priorit
 - No always-on services, no container overhead for inference.
 - Fully offline after the first download.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Core["rottingAi-studio · native · no daemon"]
+        CLI["./ai CLI"]
+        LS["llama-server<br/>llama.cpp · --jinja"]
+        M[("6 role-tuned GGUFs<br/>coder · general · fast<br/>ctf · sysadmin · sysadmin-heavy")]
+        API["OpenAI API<br/>127.0.0.1:8080/v1"]
+    end
+
+    U[you] -->|"./ai chat · code · sysadmin"| CLI
+    CLI -->|"start / stop"| LS
+    LS <-->|"mmap · one model at a time"| M
+    LS --> API
+
+    OC["OpenCode V2"] -->|"local provider · 6 roles"| API
+    WUI["Open WebUI"] -. "optional · docker compose" .-> API
+    MCP["StegSuite MCP"] -. "optional · CTF" .-> OC
+```
+
+One `./ai` command starts a single on-demand `llama-server`, which mmaps one
+role-tuned GGUF at a time and serves an OpenAI-compatible API on `:8080`.
+OpenCode (and optionally Open WebUI) consume that same endpoint — the full
+reasoning is in `docs/architecture.md`.
+
 ## Features
 
-- 🧠 **Native llama.cpp** (`llama-server` + `llama-cli`), AVX2/FMA/F16C build.
-- 🤖 **Six role-tuned models** (coding / general / fast / ctf / sysadmin + optional heavy).
-- 🖥️ **`./ai` CLI** — start/stop/status/chat/benchmark/upgrade in one command.
-- 🔌 **OpenAI-compatible API** on `/v1` (LAN-reachable, optional Bearer auth).
-- 🧩 **42 skills** vendored offline (find-skills + addyosmani dev skills + ljagiello CTF skills + custom).
-- 🔧 **OpenCode V2** integration with tool calling (`--jinja`).
-- 📦 Optional Docker Compose for GUI/RAG — all off by default.
-- ✅ Checksum-verified model downloads, reproducible benchmarks.
+- **Native llama.cpp** (`llama-server` + `llama-cli`), AVX2/FMA/F16C build.
+- **Six role-tuned models** (coding / general / fast / ctf / sysadmin + optional heavy).
+- **`./ai` CLI** — start/stop/status/chat/benchmark/upgrade in one command.
+- **OpenAI-compatible API** on `/v1` (LAN-reachable, optional Bearer auth).
+- **42 skills** vendored offline (find-skills + addyosmani dev skills + ljagiello CTF skills + custom).
+- **OpenCode V2** integration with tool calling (`--jinja`).
+- Optional Docker Compose for GUI/RAG — all off by default.
+- Checksum-verified model downloads, reproducible benchmarks.
 
 ## Requirements
 

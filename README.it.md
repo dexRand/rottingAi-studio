@@ -29,16 +29,42 @@ priorità assoluta**.
 - Nessun servizio sempre attivo, nessun overhead container per l'inferenza.
 - Completamente offline dopo il primo download.
 
+## Architettura
+
+```mermaid
+flowchart LR
+    subgraph Core["rottingAi-studio · nativo · nessun daemon"]
+        CLI["./ai CLI"]
+        LS["llama-server<br/>llama.cpp · --jinja"]
+        M[("6 GGUF per ruolo<br/>coder · general · fast<br/>ctf · sysadmin · sysadmin-heavy")]
+        API["API OpenAI<br/>127.0.0.1:8080/v1"]
+    end
+
+    U[tu] -->|"./ai chat · code · sysadmin"| CLI
+    CLI -->|"start / stop"| LS
+    LS <-->|"mmap · un modello alla volta"| M
+    LS --> API
+
+    OC["OpenCode V2"] -->|"provider local · 6 ruoli"| API
+    WUI["Open WebUI"] -. "opzionale · docker compose" .-> API
+    MCP["StegSuite MCP"] -. "opzionale · CTF" .-> OC
+```
+
+Un solo comando `./ai` avvia un `llama-server` on-demand, che fa mmap di un GGUF
+alla volta ed espone un'API OpenAI-compatibile su `:8080`. OpenCode (e
+opzionalmente Open WebUI) consumano lo stesso endpoint — il ragionamento
+completo è in `docs/architecture.md`.
+
 ## Funzionalità
 
-- 🧠 **llama.cpp nativo** (`llama-server` + `llama-cli`), build AVX2/FMA/F16C.
-- 🤖 **Sei modelli per ruolo** (coding / general / fast / ctf / sysadmin + pesante opzionale).
-- 🖥️ **CLI `./ai`** — start/stop/status/chat/benchmark/upgrade in un comando.
-- 🔌 **API OpenAI-compatibile** su `/v1` (raggiungibile in LAN, auth Bearer opzionale).
-- 🧩 **42 skill** vendored offline (find-skills + skill dev addyosmani + skill CTF ljagiello + custom).
-- 🔧 **Integrazione OpenCode V2** con tool calling (`--jinja`).
-- 📦 Docker Compose opzionale per GUI/RAG — tutto spento di default.
-- ✅ Download modelli con verifica checksum, benchmark riproducibili.
+- **llama.cpp nativo** (`llama-server` + `llama-cli`), build AVX2/FMA/F16C.
+- **Sei modelli per ruolo** (coding / general / fast / ctf / sysadmin + pesante opzionale).
+- **CLI `./ai`** — start/stop/status/chat/benchmark/upgrade in un comando.
+- **API OpenAI-compatibile** su `/v1` (raggiungibile in LAN, auth Bearer opzionale).
+- **42 skill** vendored offline (find-skills + skill dev addyosmani + skill CTF ljagiello + custom).
+- **Integrazione OpenCode V2** con tool calling (`--jinja`).
+- Docker Compose opzionale per GUI/RAG — tutto spento di default.
+- Download modelli con verifica checksum, benchmark riproducibili.
 
 ## Requisiti
 
