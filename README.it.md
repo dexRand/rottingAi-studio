@@ -10,8 +10,8 @@ Uno **stack di AI locale** minimale e riproducibile per macchine CPU-only
 nessun servizio a riposo, un modello alla volta — la macchina resta reattiva
 mentre lavori.
 
-> **In breve** — tre modelli GGUF (coding / general / sysadmin) serviti on-demand
-> da un `llama-server` nativo, gestiti da una piccola CLI `./ai`, e usabili da
+> **In breve** — sei modelli GGUF per ruolo serviti on-demand da un
+> `llama-server` nativo, gestiti da una piccola CLI `./ai`, e usabili da
 > OpenCode e da qualunque client OpenAI-compatibile.
 
 ---
@@ -32,10 +32,10 @@ priorità assoluta**.
 ## Funzionalità
 
 - 🧠 **llama.cpp nativo** (`llama-server` + `llama-cli`), build AVX2/FMA/F16C.
-- 🤖 **Tre modelli per ruolo** + un'alternativa veloce (vedi [Modelli](#modelli)).
+- 🤖 **Sei modelli per ruolo** (coding / general / fast / ctf / sysadmin + pesante opzionale).
 - 🖥️ **CLI `./ai`** — start/stop/status/chat/benchmark/upgrade in un comando.
 - 🔌 **API OpenAI-compatibile** su `/v1` (raggiungibile in LAN, auth Bearer opzionale).
-- 🧩 **28 skill** vendored offline (find-skills + skill dev addyosmani + 2 custom).
+- 🧩 **42 skill** vendored offline (find-skills + skill dev addyosmani + skill CTF ljagiello + custom).
 - 🔧 **Integrazione OpenCode V2** con tool calling (`--jinja`).
 - 📦 Docker Compose opzionale per GUI/RAG — tutto spento di default.
 - ✅ Download modelli con verifica checksum, benchmark riproducibili.
@@ -55,12 +55,12 @@ cd rottingAi-studio
 
 cp .env.example .env                # regola host / porta / API key se serve
 ./scripts/install.sh native         # builda llama.cpp con -march=native
-./scripts/download-models.sh --all  # scarica i 4 GGUF (con checksum)
+./scripts/download-models.sh --all  # scarica i 6 GGUF (con checksum)
 
-./scripts/ai chat                   # avvia + apre la web UI integrata (general)
-./scripts/ai code                   # modello coding (Qwen2.5-Coder-7B)
-./scripts/ai sysadmin               # modello sysadmin (Gemma 3 12B)
-./scripts/ai stop                   # ferma e libera la RAM
+./ai chat                   # avvia + apre la web UI integrata (general)
+./ai code                   # modello coding (Qwen2.5-Coder-7B)
+./ai sysadmin               # modello sysadmin (Qwen2.5-7B)
+./ai stop                   # ferma e libera la RAM
 ```
 
 ## Utilizzo
@@ -120,9 +120,10 @@ OpenCode come `colibri/super-heavy` (`config/opencode/opencode.jsonc`).
 ## Integrazione OpenCode
 
 Copia `config/opencode/opencode.jsonc` nella root del progetto (o in
-`~/.config/opencode/`) e avvia `./ai start <role>`. I modelli appaiono come
-`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-heavy` con tool
-calling abilitato.
+`~/.config/opencode/`) e avvia `./ai start <role>`. I ruoli llama.cpp appaiono
+come `local/coder`, `local/general`, `local/fast`, `local/ctf`, `local/sysadmin`,
+`local/sysadmin-heavy` — e il runtime Colibri come `colibri/super-heavy` — tutti
+con tool calling abilitato.
 
 ## Accesso API
 
@@ -138,9 +139,10 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 ## Skill
 
-28 skill sono vendored offline in `.opencode/skills/`:
-`find-skills` (scopri/installa skill da `skills.sh`), 25 skill di sviluppo da
-`addyosmani/agent-skills`, e due custom (`local-ai`, `arch-sysadmin`).
+42 skill sono vendored offline in `.opencode/skills/`: `find-skills`
+(scopri/installa skill da `skills.sh`), 25 skill di sviluppo da
+`addyosmani/agent-skills`, 11 skill CTF da `ljagiello/ctf-skills`, e 5 custom
+(`local-ai`, `arch-sysadmin`, `ctf-toolbox`, `docker`, `proxmox`).
 
 ## Aggiornamento e manutenzione
 
@@ -156,12 +158,13 @@ Vedi `docs/upgrading.md` per il quadro completo (incluso il pinning di llama.cpp
 
 ```
 rottingAi-studio/
-├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai
+├── ai -> scripts/ai  # entry point principale
+├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai, colibri
 ├── config/
 │   ├── llama.cpp/roles.conf     # preset ruolo → modello/alias/contesto
 │   └── opencode/opencode.jsonc  # provider locale OpenCode
 ├── .opencode/
-│   ├── skills/       # 28 skill vendored
+│   ├── skills/       # 42 skill vendored
 │   └── references/   # checklist condivise per le skill
 ├── models/           # istruzioni download + checksum (GGUF non versionati)
 ├── docs/             # architecture, models, upgrading, troubleshooting

@@ -9,9 +9,9 @@ A minimal, reproducible **local AI stack** for CPU-only machines (16 GB RAM, AVX
 built on **llama.cpp** and **OpenCode**. No daemons, no idle services, one model at
 a time — the machine stays responsive while you work.
 
-> **TL;DR** — three GGUF models (coding / general / sysadmin) served on demand by a
-> native `llama-server`, driven by a small `./ai` CLI, and usable from OpenCode and
-> any OpenAI-compatible client.
+> **TL;DR** — six role-tuned GGUF models served on demand by a native
+> `llama-server`, driven by a small `./ai` CLI, and usable from OpenCode and any
+> OpenAI-compatible client.
 
 ---
 
@@ -30,10 +30,10 @@ with AVX2 and 16 GB of RAM — where **desktop responsiveness is the top priorit
 ## Features
 
 - 🧠 **Native llama.cpp** (`llama-server` + `llama-cli`), AVX2/FMA/F16C build.
-- 🤖 **Three role-tuned models** + a fast alternative (see [Models](#models)).
+- 🤖 **Six role-tuned models** (coding / general / fast / ctf / sysadmin + optional heavy).
 - 🖥️ **`./ai` CLI** — start/stop/status/chat/benchmark/upgrade in one command.
 - 🔌 **OpenAI-compatible API** on `/v1` (LAN-reachable, optional Bearer auth).
-- 🧩 **28 skills** vendored offline (find-skills + addyosmani dev skills + 2 custom).
+- 🧩 **42 skills** vendored offline (find-skills + addyosmani dev skills + ljagiello CTF skills + custom).
 - 🔧 **OpenCode V2** integration with tool calling (`--jinja`).
 - 📦 Optional Docker Compose for GUI/RAG — all off by default.
 - ✅ Checksum-verified model downloads, reproducible benchmarks.
@@ -53,12 +53,12 @@ cd rottingAi-studio
 
 cp .env.example .env                # adjust host / port / API key if needed
 ./scripts/install.sh native         # build llama.cpp with -march=native
-./scripts/download-models.sh --all  # download the 4 GGUFs (with checksums)
+./scripts/download-models.sh --all  # download the 6 GGUFs (with checksums)
 
-./scripts/ai chat                   # start + open the built-in web UI (general)
-./scripts/ai code                   # coding model (Qwen2.5-Coder-7B)
-./scripts/ai sysadmin               # sysadmin model (Gemma 3 12B)
-./scripts/ai stop                   # stop and free the RAM
+./ai chat                   # start + open the built-in web UI (general)
+./ai code                   # coding model (Qwen2.5-Coder-7B)
+./ai sysadmin               # sysadmin model (Qwen2.5-7B)
+./ai stop                   # stop and free the RAM
 ```
 
 ## Usage
@@ -118,9 +118,10 @@ OpenCode as `colibri/super-heavy` (`config/opencode/opencode.jsonc`).
 ## OpenCode integration
 
 Copy `config/opencode/opencode.jsonc` to your project root (or
-`~/.config/opencode/`) and start `./ai start <role>`. The models appear as
-`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-heavy` with tool
-calling enabled.
+`~/.config/opencode/`) and start `./ai start <role>`. The llama.cpp roles appear
+as `local/coder`, `local/general`, `local/fast`, `local/ctf`, `local/sysadmin`,
+`local/sysadmin-heavy` — and the Colibri runtime as `colibri/super-heavy` — all
+with tool calling enabled.
 
 ## API access
 
@@ -136,9 +137,10 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 ## Skills
 
-28 skills are vendored offline in `.opencode/skills/`:
-`find-skills` (discover/install skills from `skills.sh`), 25 development skills from
-`addyosmani/agent-skills`, and two custom ones (`local-ai`, `arch-sysadmin`).
+42 skills are vendored offline in `.opencode/skills/`: `find-skills`
+(discover/install skills from `skills.sh`), 25 development skills from
+`addyosmani/agent-skills`, 11 CTF skills from `ljagiello/ctf-skills`, and 5 custom
+ones (`local-ai`, `arch-sysadmin`, `ctf-toolbox`, `docker`, `proxmox`).
 
 ## Upgrading & maintenance
 
@@ -154,12 +156,13 @@ See `docs/upgrading.md` for the full picture (including pinning llama.cpp/models
 
 ```
 rottingAi-studio/
-├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai
+├── ai -> scripts/ai  # main entry point
+├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai, colibri
 ├── config/
 │   ├── llama.cpp/roles.conf     # role → model/alias/context presets
 │   └── opencode/opencode.jsonc  # OpenCode local provider
 ├── .opencode/
-│   ├── skills/       # 28 vendored skills
+│   ├── skills/       # 42 vendored skills
 │   └── references/   # shared checklists for the skills
 ├── models/           # download instructions + checksums (GGUFs not versioned)
 ├── docs/             # architecture, models, upgrading, troubleshooting
