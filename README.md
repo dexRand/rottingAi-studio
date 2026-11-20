@@ -189,6 +189,12 @@ rottingAi-studio/
 - No Docker socket mounted into AI containers, no root host mounts, no automatic
   `sudo`, no data sent off-machine, explicit approval for agent commands.
 
+## Contributing
+
+Work always goes through issues: open one first, then a branch
+`<type>/<n>-<slug>`, then a PR with `Closes #<n>`. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
+
 ## License
 
 [MIT](LICENSE) © 2026 dexRand. Vendored skills retain their own MIT licenses

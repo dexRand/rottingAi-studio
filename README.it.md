@@ -191,6 +191,12 @@ rottingAi-studio/
   nessun `sudo` automatico, nessun invio dati fuori dalla macchina, approvazione
   esplicita dei comandi agentici.
 
+## Contribuire
+
+Si lavora sempre tramite issue: aprine una prima, poi un branch
+`<type>/<n>-<slug>`, poi una PR con `Closes #<n>`. Vedi
+[CONTRIBUTING.md](CONTRIBUTING.md) per il flusso completo.
+
 ## Licenza
 
 [MIT](LICENSE) © 2026 dexRand. Le skill vendored mantengono le loro licenze MIT
