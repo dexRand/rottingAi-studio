@@ -1,6 +1,6 @@
 ---
 name: local-ai
-description: Operate the local AI runtime (llama.cpp, native). Start/stop the inference server, pick a model role (coding/general/sysadmin), check status, run benchmarks, or troubleshoot the local LLM setup. Use when the user mentions "./ai", local models, llama-server, or asks to run/stop/switch a local model.
+description: Operate the local AI runtime (llama.cpp + router, native). Start/stop the base model and the router, check status, see which add-ons the router picks, run benchmarks, or troubleshoot the local LLM setup. Use when the user mentions "./ai", local models, llama-server, the router, add-ons, or asks to run/stop the local model.
 ---
 
 # Local AI Runtime
@@ -9,53 +9,56 @@ How to operate the rottingAi-studio local AI stack on this machine.
 
 ## The stack
 
-- llama.cpp **native** (no daemon, on-demand). `llama-server` exposes an
-  OpenAI-compatible API (`/v1`) plus a built-in web UI.
-- Three roles + one alternative, **one model loaded at a time**:
+- **One base model always loaded** in a native `llama-server` (internal,
+  `127.0.0.1:8081`). No model switching: it would throw away the KV cache.
+- A **router proxy** in front (`127.0.0.1:8080`, OpenAI API `/v1`) picks a
+  category (`coding`, `sysadmin`) and add-ons for each request and appends them
+  at the end of the context. The user's prompt stays intact.
 
-| Role | Model | Alias | RAM (approx) | Notes |
-|---|---|---|---|---|
-| `coder` | Qwen2.5-Coder-7B-Instruct Q4_K_M | `qwen2.5-coder-7b` | ~5,5 GB | coding, backend OpenCode |
-| `general` | Qwen3-8B Q4_K_M | `qwen3-8b` | ~6 GB | italiano, ragionamento |
-| `fast` | Qwen3.5-4B Q4_K_M | `qwen3.5-4b` | ~3,5 GB | superfast, task veloci |
-| `ctf` | WhiteRabbitNeo-2.5 (Qwen2.5-Coder-7B) Q4_K_M | `whiterabbitneo-7b` | ~5,5 GB | sicurezza / CTF / pentesting |
-| `sysadmin` | Qwen2.5-7B-Instruct Q5_K_M | `qwen2.5-7b` | ~6 GB | tecnico, veloce (default) |
-| `sysadmin-heavy` | Gemma 3 12B Q4_K_M | `gemma-3-12b` | ~9 GB | opzionale: profondità, ctx 128K |
+| Role | Model | Alias | Notes |
+|---|---|---|---|
+| `base` | Qwen3.5-9B Q4_K_M | `qwen3.5-9b` | default, always on, thinking off |
+| `lite` | Qwen3.5-4B Q4_K_M | `qwen3.5-4b` | faster alternative, instead of base |
+| `ctf` | WhiteRabbitNeo-2.5 Q4_K_M | `whiterabbitneo-7b` | rare exception, security / CTF |
 
-## Commands (dalla root della repo)
+## Commands (from the repo root)
 
 ```bash
-./scripts/ai chat [role]      # avvia il server + apre la web UI
-./scripts/ai code             # modello coding
-./scripts/ai fast             # superfast 4B (Qwen3.5-4B)
-./scripts/ai ctf              # helper sicurezza (WhiteRabbitNeo)
-./scripts/ai sysadmin         # modello sysadmin (7B, veloce)
-./scripts/ai sysadmin-heavy   # sysadmin pesante (12B, opzionale)
-./scripts/ai start <role>     # solo llama-server
-./scripts/ai stop             # ferma e libera la RAM
-./scripts/ai status           # in esecuzione? modello? RAM?
-./scripts/ai logs             # log del server
-./scripts/ai download [role]  # scarica un modello
-./scripts/ai benchmark <role> # misura t/s
-./scripts/ai healthcheck      # integrità + health
+./ai chat                 # model + router + web UI
+./ai start [role]         # model + router only
+./ai stop                 # stop everything, free RAM
+./ai status               # model, router, RAM, health
+./ai logs [router]        # llama-server or router log
+./ai route "testo" --show # which category/add-ons the router would add
+./ai route-eval           # router accuracy on router/examples/*.jsonl
+./ai router-check         # validate addons/registry.toml
+./ai benchmark [role]     # measure t/s
+./ai healthcheck          # integrity + health
 ```
 
-## Regole (la reattività è la priorità assoluta)
+## Rules
 
-- Carica **un solo modello alla volta** (`start` rifiuta un secondo).
-- Mantieni `--threads` a 4 (core fisici; l'SMT raramente aiuta e scalda).
-- `stop` libera subito la RAM (rilascio mmap). Nessun daemon a riposo.
-- Non caricare il 12B (`sysadmin-heavy`) con app/Docker pesanti attivi:
-  il default `sysadmin` (7B) è già veloce.
-- Bind solo `127.0.0.1`: mai esporre la porta pubblicamente.
+- **One model at a time**: `start` refuses a second one; `./ai stop` first.
+- Keep `THREADS` at the physical core count; SMT rarely helps.
+- Add-ons are never unloaded mid-conversation; a new conversation starts clean.
+- Bind only `127.0.0.1` unless the user explicitly wants LAN access
+  (`ROUTER_HOST=0.0.0.0` + `LLAMA_API_KEY`).
+- `ROUTER_ENABLED=0` runs llama-server alone (no add-ons), for comparisons.
 
-## Integrazione OpenCode
+## Adding an add-on
 
-Con `config/opencode/opencode.jsonc` copiato nella root del progetto e
-`llama-server` in esecuzione con `--jinja`, i modelli sono selezionabili come
-`local/coder`, `local/general`, `local/sysadmin`, `local/sysadmin-heavy`.
+1. Write a dense Markdown file under `addons/<category>/`.
+2. Add an `[addons.<id>]` entry in `addons/registry.toml` (category, type, file,
+   label, magika labels, keywords).
+3. `./ai router-check`, then `./ai route "..." --show` to see it triggered.
 
-## In caso di problemi
+## OpenCode
 
-Vedi `../../docs/troubleshooting.md` e `../../docs/architecture.md`.
-I preset dei ruoli sono in `../../config/llama.cpp/roles.conf`.
+With `config/opencode/opencode.jsonc` in the project and `./ai start` running,
+the model is `local/base` (tool calling on), served through the router.
+
+## Troubleshooting
+
+See `../../docs/troubleshooting.md` and `../../docs/architecture.md`.
+Model presets: `../../config/llama.cpp/roles.conf`; router settings:
+`../../config/router.toml`.

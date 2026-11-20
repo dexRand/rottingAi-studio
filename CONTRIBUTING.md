@@ -41,7 +41,9 @@ Never commit directly to `main`.
 
 ```bash
 bash -n scripts/*.sh scripts/ai           # shell syntax
-./scripts/orchestrate.py --skills-only    # skills + config sanity (no models needed)
+python3 -m unittest discover -s tests     # router unit tests (no models needed)
+./ai router-check                         # add-on registry + sizes
+./ai test --skills-only                   # skills + config sanity (no models needed)
 ```
 
 ## Red lines

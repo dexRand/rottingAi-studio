@@ -3,81 +3,84 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Inferenza: solo CPU](https://img.shields.io/badge/inferenza-solo%20CPU-important)](https://github.com/ggml-org/llama.cpp)
-[![OS: CachyOS / Arch](https://img.shields.io/badge/OS-CachyOS%20%2F%20Arch-blue)](https://cachyos.org/)
+[![OS: Linux](https://img.shields.io/badge/OS-Debian%20%2F%20Arch-blue)](https://cachyos.org/)
 
 Uno **stack di AI locale** minimale e riproducibile per macchine CPU-only
-(16 GB di RAM, AVX2), costruito su **llama.cpp** e **OpenCode**. Nessun daemon,
-nessun servizio a riposo, un modello alla volta — la macchina resta reattiva
-mentre lavori.
+(16 GB di RAM, AVX2), costruito su **llama.cpp** e **OpenCode**: **un solo modello
+base sempre caricato**, più **add-on** scelti per ogni richiesta da un **router**
+piccolo e veloce — nessun cambio di modello.
 
-> **In breve** — sei modelli GGUF per ruolo serviti on-demand da un
-> `llama-server` nativo, gestiti da una piccola CLI `./ai`, e usabili da
-> OpenCode e da qualunque client OpenAI-compatibile.
+> **In breve** — `./ai start` carica un GGUF (Qwen3.5-9B) in un `llama-server`
+> nativo e ci mette davanti un router. Per ogni richiesta il router (regole a
+> parole chiave + Magika, non un LLM) sceglie una categoria e gli add-on che
+> servono al modello — es. una guida da Python senior o una guida ai comandi
+> Linux — e li aggiunge in fondo al contesto. Usabile da OpenCode e da qualunque
+> client OpenAI-compatibile.
 
 ---
 
 ## Perché esiste
 
-L'inferenza LLM locale è di solito o pesante (daemon Ollama, Docker, runtime GPU)
-o un consiglio generico che non calza su una macchina specifica. Questa repo è
-l'opposto: un setup **nativo e on-demand** tarato su un vincolo reale — una CPU
-4 core/8 thread con AVX2 e 16 GB di RAM — dove la **reattività del desktop è la
-priorità assoluta**.
+Su una macchina solo CPU la parte costosa è cambiare modello: richiede tempo e,
+soprattutto, butta via il contesto (cache KV), quindi tutta la conversazione va
+rielaborata su CPU. Questa repo tiene **un solo modello caricato** e lo rende
+specialista su richiesta aggiungendo add-on testuali.
 
-- Carica un modello solo quando serve, scaricalo all'istante (rilascio mmap).
-- Un modello alla volta, thread limitati, contesto moderato.
-- Nessun servizio sempre attivo, nessun overhead container per l'inferenza.
-- Completamente offline dopo il primo download.
+- **Un modello, sempre acceso**: niente ricaricamenti, la cache KV vale per tutta la conversazione.
+- **Add-on solo in fondo al contesto**: il prefisso già elaborato non cambia mai,
+  quindi non viene mai rielaborato.
+- **Il router non è un LLM**: classificatori che rispondono sì/no in millisecondi.
+- Nativo, nessun daemon oltre allo stack stesso, offline dopo il primo download.
 
 ## Architettura
 
 ```mermaid
 flowchart LR
-    subgraph Core["rottingAi-studio · nativo · nessun daemon"]
-        CLI["./ai CLI"]
-        LS["llama-server<br/>llama.cpp · --jinja"]
-        M[("6 GGUF per ruolo<br/>coder · general · fast<br/>ctf · sysadmin · sysadmin-heavy")]
-        API["API OpenAI<br/>127.0.0.1:8080/v1"]
+    U[tu / OpenCode / web UI] -->|"API OpenAI :8080"| R
+    subgraph Core["rottingAi-studio · nativo"]
+        R["router proxy<br/>parole chiave · Magika<br/>(GLiClass: sperimentale)"]
+        A[("add-on<br/>addons/registry.toml")]
+        LS["llama-server :8081<br/>UN modello base · --jinja"]
     end
-
-    U[tu] -->|"./ai chat · code · sysadmin"| CLI
-    CLI -->|"start / stop"| LS
-    LS <-->|"mmap · un modello alla volta"| M
-    LS --> API
-
-    OC["OpenCode V2"] -->|"provider local · 6 ruoli"| API
-    WUI["Open WebUI"] -. "opzionale · docker compose" .-> API
-    MCP["StegSuite MCP"] -. "opzionale · CTF" .-> OC
+    R -->|"categoria + add-on"| A
+    A -->|"aggiunti IN FONDO<br/>al contesto"| R
+    R -->|"prompt utente intatto"| LS
+    MCP["StegSuite MCP"] -. "opzionale · CTF" .-> U
 ```
 
-Un solo comando `./ai` avvia un `llama-server` on-demand, che fa mmap di un GGUF
-alla volta ed espone un'API OpenAI-compatibile su `:8080`. OpenCode (e
-opzionalmente Open WebUI) consumano lo stesso endpoint — il ragionamento
-completo è in `docs/architecture.md`.
+1. Il prompt dell'utente resta **intatto**.
+2. Il router legge gli **ultimi messaggi dell'utente** (non solo l'ultimo) e
+   produce flag sì/no: una **categoria** (`coding`, `sysadmin`) e gli **add-on**.
+   Il linguaggio di file e codice lo dà **Magika** (~5 ms su CPU).
+3. Sotto la soglia di confidenza **non tira a indovinare**: nessun add-on, il
+   modello base risponde normalmente.
+4. Gli add-on scelti vanno **nel turno utente corrente, prima del prompt**. Una
+   volta aggiunti restano nella stessa posizione fino a fine conversazione: mai
+   scaricati o spostati, così la cache KV resta valida.
 
-Il nodo `StegSuite MCP` è l'unico collegamento tra repo: **non** fa parte di
-questa repo. È servito dalla repo separata [CTF Toolbox](https://github.com/dexRand/ctf-docker)
-— un workbench Docker Compose per CTF, costruito attorno a StegSuite — e qui è
-collegato tramite `config/opencode/opencode.jsonc`. Avvialo da lì con `./ctf up`;
-quando non è attivo, OpenCode parte normalmente, solo senza gli strumenti CTF.
+Il ragionamento completo è in [`docs/architecture.md`](docs/architecture.md); il
+brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 
-## Funzionalità
+## Add-on
 
-- **llama.cpp nativo** (`llama-server` + `llama-cli`), build AVX2/FMA/F16C.
-- **Sei modelli per ruolo** (coding / general / fast / ctf / sysadmin + pesante opzionale).
-- **CLI `./ai`** — start/stop/status/chat/benchmark/upgrade in un comando.
-- **API OpenAI-compatibile** su `/v1` (raggiungibile in LAN, auth Bearer opzionale).
-- **42 skill** vendored offline (find-skills + skill dev addyosmani + skill CTF ljagiello + custom).
-- **Integrazione OpenCode V2** con tool calling (`--jinja`).
-- Docker Compose opzionale per GUI/RAG — tutto spento di default.
-- Download modelli con verifica checksum, benchmark riproducibili.
+| Add-on | Categoria | Tipo | ~Token | Attivato da |
+|---|---|---|---|---|
+| `python` | coding | istruzioni | 1500 | Magika `python`, parole chiave (pip, pytest, venv…) |
+| `linux-commands` | sysadmin | istruzioni | 1650 | default di `sysadmin`, Magika `shell` |
+| `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
+| `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
+| `docker` | condiviso | skill | 350 | docker, compose, container… (qualsiasi categoria) |
+
+Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
+necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne
+uno: un file Markdown + una voce in `addons/registry.toml`, poi `./ai router-check`.
 
 ## Requisiti
 
-- Linux x86_64 con **AVX2** (qualsiasi CPU Intel/AMD moderna)
-- **16 GB di RAM** (swap zram consigliato)
-- `git`, `cmake`, `make`, un compilatore C++ (`gcc`/`clang`) per buildare llama.cpp
-- Arch / CachyOS (testato); qualsiasi Linux con i requisiti sopra va bene
+- Linux x86_64 con **AVX2** (qualunque CPU Intel/AMD moderna)
+- **16 GB di RAM** (budget ~8–10 GB per il modello; zram consigliato)
+- `git`, `cmake`, `make`, un compilatore C++ (`gcc`/`clang`) per llama.cpp
+- Python 3.11+ (router: solo libreria standard; Magika opzionale)
 
 ## Avvio rapido
 
@@ -85,108 +88,127 @@ quando non è attivo, OpenCode parte normalmente, solo senza gli strumenti CTF.
 git clone https://github.com/dexRand/rottingAi-studio.git
 cd rottingAi-studio
 
-cp .env.example .env                # regola host / porta / API key se serve
-./scripts/install.sh native         # builda llama.cpp con -march=native
-./scripts/download-models.sh --all  # scarica i 6 GGUF (con checksum)
+cp .env.example .env                # porte / API key se serve
+./scripts/install.sh native         # compila llama.cpp con -march=native
+./ai download                       # modello base: Qwen3.5-9B Q4_K_M (5,7 GB)
+./ai router-install                 # opzionale: Magika (riconoscimento file/codice)
 
-./ai chat                   # avvia + apre la web UI integrata (general)
-./ai code                   # modello coding (Qwen2.5-Coder-7B)
-./ai sysadmin               # modello sysadmin (Qwen2.5-7B)
-./ai stop                   # ferma e libera la RAM
+./ai chat                           # avvia modello + router, apre la web UI
+./ai route "come vedo chi usa la porta 8080?" --show   # cosa aggiungerebbe il router?
+./ai stop                           # ferma e libera la RAM
 ```
 
-## Utilizzo
+## Uso
 
 ```text
-./ai chat [role]        avvia il server (se serve) + apre la web UI integrata
-./ai code               modello coding (Qwen2.5-Coder-7B)
-./ai fast               superfast 4B (Qwen3.5-4B)
-./ai ctf                helper sicurezza (WhiteRabbitNeo-2.5)
-./ai sysadmin           modello sysadmin (Qwen2.5-7B Q5)
-./ai sysadmin-heavy     sysadmin pesante opzionale (Gemma 3 12B)
-./ai cli [role]         chat da terminale via llama-cli (senza server)
-./ai start <role>       avvia solo llama-server
-./ai stop               ferma e libera la RAM
-./ai status             stato runtime + modello + RAM
-./ai logs               segue il log del server
-./ai download [--all|<role>]
-./ai benchmark <role> [threads]
+ai                       chat con l'AGENTE locale nella cartella corrente: esegue
+                         comandi e legge/modifica file (chiede approvazione),
+                         mostra il ragionamento, gli strumenti e le statistiche della cache
+ai "prompt"              uguale, partendo da questo prompt; si apre in una NUOVA finestra
+                         (--here = questo terminale, -p = una sola risposta, -a = auto mode: niente conferme)
+./ai chat                avvia modello + router (se serve) + apre la web UI
+./ai start [ruolo]       avvia solo modello + router (ruolo: base | lite | ctf)
+./ai stop                ferma tutto e libera la RAM
+./ai status              stato modello + router + RAM
+./ai logs [router]       segue il log di llama-server (o del router)
+./ai cli [ruolo]         chat da terminale via llama-cli (senza server né router)
+./ai route "testo" [--file F] [--history "msg"] [--show]
+./ai route-eval [file.jsonl] [--backend B] [-v]
+./ai router-check        valida il registro e le dimensioni degli add-on
+./ai router-install      .venv con Magika (+ GLiClass sperimentale)
+./ai download [--all|<ruolo>]
+./ai benchmark [ruolo] [thread]
 ./ai upgrade [all|runtime|skills|check]
-./ai healthcheck        integrità + health
+./ai healthcheck         integrità + salute
+./ai test [--skills-only] [--models RUOLI...]
 ```
 
 ## Modelli
 
-| Ruolo | Modello | Quant | Dimensione | RAM | Uso |
-|---|---|---|---|---|---|
-| `coder` | Qwen2.5-Coder-7B-Instruct | Q4_K_M | 4,68 GB | ~5,5 GB | coding, backend OpenCode |
-| `general` | Qwen3-8B | Q4_K_M | 5,03 GB | ~6 GB | multilingue, ragionamento, chat |
-| `fast` | Qwen3.5-4B | Q4_K_M | 2,74 GB | ~3,5 GB | superfast, task veloci |
-| `ctf` | WhiteRabbitNeo-2.5 (Qwen2.5-Coder-7B) | Q4_K_M | 4,68 GB | ~5,5 GB | sicurezza / CTF / pentesting |
-| `sysadmin` | Qwen2.5-7B-Instruct | Q5_K_M | 5,44 GB | ~6 GB | tecnico, veloce |
-| `sysadmin-heavy` | Gemma 3 12B | Q4_K_M | 7,30 GB | ~9 GB | opzionale: profondità, contesto 128K |
+| Ruolo | Modello | Quant | Dimensione | Uso |
+|---|---|---|---|---|
+| `base` | Qwen3.5-9B | Q4_K_M | 5,68 GB | **il** modello: sempre acceso, thinking spento di default |
+| `lite` | Qwen3.5-4B | Q4_K_M | 2,74 GB | alternativa più veloce per macchine deboli (al posto di `base`) |
+| `ctf` | WhiteRabbitNeo-2.5 (Qwen2.5-Coder-7B) | Q4_K_M | 4,68 GB | eccezione rara: sicurezza / CTF, avviato esplicitamente |
 
-I modelli vivono **fuori dalla repo** (`MODELS_DIR`, default `~/local-ai/models`) e
-non sono mai versionati. Quantizzazioni e fonti in `models/README.md`.
+Ne gira uno alla volta. `base` è il candidato principale e va ancora
+confermato con `./ai benchmark` sulla CPU di destinazione. I modelli stanno
+**fuori dalla repo** (`MODELS_DIR`, default `~/local-ai/models`); vedi `docs/models.md`.
+
+## Backend del router
+
+| Backend | Stato | Note |
+|---|---|---|
+| `keywords` | **default** | regole da `addons/registry.toml`, nessuna dipendenza, prevedibile |
+| `gliclass` | sperimentale | zero-shot; misurato **1/8 – 5/8** su prompt italiani, non riconosce mai "altro argomento" |
+| mmBERT-small / SetFit | previsto | addestrato su esempi italiani reali, misurato con `./ai route-eval` |
 
 ## Integrazione OpenCode
 
 Copia `config/opencode/opencode.jsonc` nella root del progetto (o in
-`~/.config/opencode/`) e avvia `./ai start <role>`. I ruoli llama.cpp appaiono
-come `local/coder`, `local/general`, `local/fast`, `local/ctf`, `local/sysadmin`
-e `local/sysadmin-heavy`, tutti con tool calling abilitato.
+`~/.config/opencode/`) e lancia `./ai start`. OpenCode parla col router su
+`:8080`; il modello compare come `local/base` con tool calling attivo. Le skill
+grandi restano in `.opencode/skills/` e le carica OpenCode stesso; quelle
+piccole sono anche add-on del router.
 
 ## Accesso API
 
-`llama-server` espone un'API OpenAI-compatibile su `/v1`. Di default è in ascolto
-su `127.0.0.1`; imposta `LLAMA_HOST=0.0.0.0` in `.env` per renderla raggiungibile
-dalla LAN, e `LLAMA_API_KEY` per proteggerla con `Authorization: Bearer`.
+Il router espone l'API OpenAI-compatibile su `/v1` a `127.0.0.1:8080` e inoltra
+a `llama-server`, sempre legato a `127.0.0.1:8081`. Imposta `ROUTER_HOST=0.0.0.0`
+in `.env` per renderlo raggiungibile dalla LAN e `LLAMA_API_KEY` per richiedere
+`Authorization: Bearer`. Ogni risposta ha gli header `X-Router-Category` /
+`X-Router-Addons`; `GET /router/status` (solo locale) mostra gli add-on per conversazione.
 
 ```bash
 curl http://127.0.0.1:8080/v1/chat/completions \
   -H 'Content-Type: application/json' \
-  -d '{"model":"qwen3-8b","messages":[{"role":"user","content":"Ciao!"}]}'
+  -d '{"messages":[{"role":"user","content":"Come riavvio nginx con systemctl?"}]}'
 ```
 
 ## Skill
 
-42 skill sono vendored offline in `.opencode/skills/`: `find-skills`
-(scopri/installa skill da `skills.sh`), 25 skill di sviluppo da
-`addyosmani/agent-skills`, 11 skill CTF da `ljagiello/ctf-skills`, e 5 custom
-(`local-ai`, `arch-sysadmin`, `ctf-toolbox`, `docker`, `proxmox`).
+42 skill sono vendored offline in `.opencode/skills/` e raggruppate per
+categoria nel `[catalog]` di `addons/registry.toml` (coding, sysadmin, ctf,
+meta). Origini e licenze in `.opencode/skills/README.md`.
 
 ## Aggiornamento e manutenzione
 
 ```bash
 ./ai upgrade          # repo + llama.cpp + skill vendored
 ./ai upgrade check    # versioni / stato (nessuna modifica)
-./ai healthcheck      # integrità modelli + endpoint + RAM
+./ai healthcheck      # integrità modelli + router + endpoint + RAM
 ```
 
-Vedi `docs/upgrading.md` per il quadro completo (incluso il pinning di llama.cpp/modelli).
+Vedi `docs/upgrading.md` per il quadro completo.
 
 ## Struttura
 
 ```
 rottingAi-studio/
-├── ai -> scripts/ai  # entry point principale
-├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai
+├── ai -> scripts/ai     # entry point principale
+├── router/              # router: registro, Magika, intento, composer, proxy (stdlib)
+│   └── examples/        # prompt etichettati per ./ai route-eval
+├── addons/
+│   ├── registry.toml    # categorie, add-on, catalogo skill
+│   ├── coding/          # python.md
+│   └── sysadmin/        # linux-commands.md
+├── scripts/             # lib.sh, start/stop/status, install, download, benchmark, upgrade
 ├── config/
-│   ├── llama.cpp/roles.conf     # preset ruolo → modello/alias/contesto
-│   └── opencode/opencode.jsonc  # provider locale OpenCode
-├── .opencode/
-│   ├── skills/       # 42 skill vendored
-│   └── references/   # checklist condivise per le skill
-├── models/           # istruzioni download + checksum (GGUF non versionati)
-├── docs/             # architecture, models, upgrading, troubleshooting
-├── tests/            # script di test
-├── docker-compose.yml# servizi opzionali (GUI/RAG) — spenti di default
-└── benchmarks/results/  # output benchmark misurati
+│   ├── llama.cpp/roles.conf     # modello base (+ alternative lite / ctf)
+│   ├── router.toml              # backend, soglia, storico, budget token
+│   └── opencode/opencode.jsonc  # provider OpenCode -> router
+├── .opencode/skills/    # 42 skill vendored
+├── models/              # istruzioni download + checksum (GGUF non versionati)
+├── docs/                # architecture, models, upgrading, troubleshooting
+├── tests/               # unit test (python3 -m unittest discover -s tests)
+└── docker-compose.yml   # servizi opzionali (GUI) — spenti di default
 ```
 
 ## Sicurezza
 
-- In ascolto su `127.0.0.1` di default; l'esposizione in LAN è opt-in via `LLAMA_HOST`.
+- In ascolto su `127.0.0.1` di default; l'esposizione in LAN è opt-in via
+  `ROUTER_HOST`. `llama-server` non è mai esposto direttamente.
+- Gli add-on sono file locali di questa repo: il router non scarica nulla.
 - Nessun socket Docker montato nei container AI, nessun mount della root host,
   nessun `sudo` automatico, nessun invio dati fuori dalla macchina, approvazione
   esplicita dei comandi agentici.
@@ -199,5 +221,4 @@ Si lavora sempre tramite issue: aprine una prima, poi un branch
 
 ## Licenza
 
-[MIT](LICENSE) © 2026 dexRand. Le skill vendored mantengono le loro licenze MIT
-(vedi `.opencode/skills/README.md`).
+[MIT](LICENSE) © 2026 dexRand. Le skill vendored mantengono le proprie licenze MIT
