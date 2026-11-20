@@ -72,6 +72,7 @@ cp .env.example .env                # regola host / porta / API key se serve
 ./ai ctf                helper sicurezza (WhiteRabbitNeo-2.5)
 ./ai sysadmin           modello sysadmin (Qwen2.5-7B Q5)
 ./ai sysadmin-heavy     sysadmin pesante opzionale (Gemma 3 12B)
+./ai super-heavy [op]   colibri 35B MoE (runtime separato, :8000)
 ./ai cli [role]         chat da terminale via llama-cli (senza server)
 ./ai start <role>       avvia solo llama-server
 ./ai stop               ferma e libera la RAM
@@ -96,6 +97,25 @@ cp .env.example .env                # regola host / porta / API key se serve
 
 I modelli vivono **fuori dalla repo** (`MODELS_DIR`, default `~/local-ai/models`) e
 non sono mai versionati. Quantizzazioni e fonti in `models/README.md`.
+
+## Super-heavy (colibri, opzionale)
+
+Un modello opzionale **MoE da 35B** (Qwen3.6-35B-A3B) gira su un motore di
+inferenza separato, [colibri](https://github.com/JustVugg/colibri), non llama.cpp.
+È uno strumento *one-shot profondo*, non un modello interattivo: **~6,5 t/s di
+decode** su questa CPU (~3x il 12B), ma **~10-15 s prima del primo token** — un
+MoE da 35B streamma i suoi esperti dal disco con 16 GB di RAM. Occupa ~13 GB
+mentre gira; fermalo quando non serve.
+
+```bash
+git clone https://github.com/JustVugg/colibri ~/colibri
+cd ~/colibri && python3 c/coli setup --yes --model qwen36-35b --no-start  # download 23 GB
+./scripts/colibri.sh start    # oppure: ./ai super-heavy
+./scripts/colibri.sh stop
+```
+
+Espone un'API OpenAI-compatibile su `http://127.0.0.1:8000/v1` e appare in
+OpenCode come `colibri/super-heavy` (`config/opencode/opencode.jsonc`).
 
 ## Integrazione OpenCode
 

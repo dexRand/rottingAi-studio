@@ -8,6 +8,7 @@
 #   ./ai ctf                security helper (WhiteRabbitNeo-2.5)
 #   ./ai sysadmin           sysadmin model (Qwen2.5-7B Q5)
 #   ./ai sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
+#   ./ai super-heavy        colibri 35B MoE (separate runtime, port 8000)
 #   ./ai cli [role]         terminal chat via llama-cli (no server)
 #   ./ai start <role>       start llama-server only
 #   ./ai stop               stop and free RAM
@@ -40,6 +41,7 @@ Usage: ./ai <command> [args]
   ctf                security helper (WhiteRabbitNeo-2.5)
   sysadmin           sysadmin model (Qwen2.5-7B Q5)
   sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
+  super-heavy [op]   colibri 35B MoE (separate runtime, :8000) — op: start|stop|status
   cli [role]         terminal chat via llama-cli (no server)
   start <role>       start llama-server only
   stop               stop and free RAM
@@ -92,6 +94,7 @@ case "$cmd" in
   ctf)           ensure_server ctf; open_browser ;;
   sysadmin)       ensure_server sysadmin; open_browser ;;
   sysadmin-heavy) ensure_server sysadmin-heavy; open_browser ;;
+  super-heavy)    "$REPO_DIR/scripts/colibri.sh" "${@:-start}" ;;
   cli)
     role="${1:-general}"
     source "$REPO_DIR/config/llama.cpp/roles.conf"
