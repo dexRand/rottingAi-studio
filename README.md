@@ -70,7 +70,6 @@ cp .env.example .env                # adjust host / port / API key if needed
 ./ai ctf                security helper (WhiteRabbitNeo-2.5)
 ./ai sysadmin           sysadmin model (Qwen2.5-7B Q5)
 ./ai sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
-./ai super-heavy [op]   colibri 35B MoE (separate runtime, :8000)
 ./ai cli [role]         terminal chat via llama-cli (no server)
 ./ai start <role>       start llama-server only
 ./ai stop               stop and free RAM
@@ -96,32 +95,12 @@ cp .env.example .env                # adjust host / port / API key if needed
 Models live **outside the repo** (`MODELS_DIR`, default `~/local-ai/models`) and are
 never versioned. Quant types and sources are documented in `models/README.md`.
 
-## Super-heavy (colibri, optional)
-
-An optional **35B MoE** (Qwen3.6-35B-A3B) runs on a separate inference engine,
-[colibri](https://github.com/JustVugg/colibri), not llama.cpp. It is a *deep
-one-shot* tool, not an interactive model: **~6.5 t/s decode** on this CPU
-(~3x the 12B), but **~10-15 s before the first token** — a 35B MoE streams its
-experts from disk on 16 GB of RAM. It holds ~13 GB while running; stop it when
-not in use.
-
-```bash
-git clone https://github.com/JustVugg/colibri ~/colibri
-cd ~/colibri && python3 c/coli setup --yes --model qwen36-35b --no-start  # 23 GB download
-./scripts/colibri.sh start    # or: ./ai super-heavy
-./scripts/colibri.sh stop
-```
-
-It exposes an OpenAI-compatible API on `http://127.0.0.1:8000/v1` and appears in
-OpenCode as `colibri/super-heavy` (`config/opencode/opencode.jsonc`).
-
 ## OpenCode integration
 
 Copy `config/opencode/opencode.jsonc` to your project root (or
 `~/.config/opencode/`) and start `./ai start <role>`. The llama.cpp roles appear
-as `local/coder`, `local/general`, `local/fast`, `local/ctf`, `local/sysadmin`,
-`local/sysadmin-heavy` — and the Colibri runtime as `colibri/super-heavy` — all
-with tool calling enabled.
+as `local/coder`, `local/general`, `local/fast`, `local/ctf`, `local/sysadmin`
+and `local/sysadmin-heavy`, all with tool calling enabled.
 
 ## API access
 
@@ -157,7 +136,7 @@ See `docs/upgrading.md` for the full picture (including pinning llama.cpp/models
 ```
 rottingAi-studio/
 ├── ai -> scripts/ai  # main entry point
-├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai, colibri
+├── scripts/          # install, download, start/stop/status, benchmark, upgrade, ai
 ├── config/
 │   ├── llama.cpp/roles.conf     # role → model/alias/context presets
 │   └── opencode/opencode.jsonc  # OpenCode local provider

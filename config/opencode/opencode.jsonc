@@ -51,25 +51,6 @@
           "limit": { "context": 32768, "output": 8192 }
         }
       }
-    },
-    // Colibri "super-heavy": a separate MoE runtime (not llama.cpp) on port 8000.
-    // Start it first: ./scripts/colibri.sh start   (stop with: ... stop)
-    // Best for deep one-shot queries, NOT agent loops (each turn's first token
-    // is ~10-15 s: the 35B MoE streams experts from disk on 16 GB of RAM).
-    "colibri": {
-      "name": "Colibri super-heavy (35B MoE)",
-      "package": "@opencode/ai/providers/openai-compatible",
-      "settings": {
-        "baseURL": "http://127.0.0.1:8000/v1"
-      },
-      "models": {
-        "super-heavy": {
-          "modelID": "qwen3.6-colibri",
-          "name": "Super-heavy (35B MoE)",
-          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
-          "limit": { "context": 16384, "output": 8192 }
-        }
-      }
     }
   },
 
