@@ -1,31 +1,39 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Show llama-server status: running? which model? RAM? health?
+# Show the stack status: model, router, RAM, health.
 #   ./scripts/status.sh
 # ============================================================================
 set -uo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-[ -f "$REPO_DIR/.env" ] && source "$REPO_DIR/.env"
-HOST="${LLAMA_HOST:-127.0.0.1}"
-PORT="${LLAMA_PORT:-8080}"
-PID_FILE="$REPO_DIR/runtime/llama-server.pid"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-  PID="$(cat "$PID_FILE")"
-  echo "status:   RUNNING (pid $PID)"
-  echo "command:  $(tr '\0' ' ' < "/proc/$PID/cmdline" 2>/dev/null | tr -s ' ')"
+if pid_alive "$LLAMA_PID_FILE" llama-server; then
+  PID="$(cat "$LLAMA_PID_FILE")"
+  echo "model:    RUNNING (pid $PID) $(tr '\0' ' ' < "/proc/$PID/cmdline" | grep -o -- "--alias [^ ]*" | cut -d' ' -f2)"
   echo "rss:      $(awk '/VmRSS/{print $2" kB"}' "/proc/$PID/status" 2>/dev/null)"
 else
-  echo "status:   STOPPED (no model loaded — RAM free)"
+  echo "model:    STOPPED (no model loaded — RAM free)"
+fi
+
+if [ "$ROUTER_ENABLED" = "1" ]; then
+  if pid_alive "$ROUTER_PID_FILE" "router serve"; then
+    echo "router:   RUNNING (pid $(cat "$ROUTER_PID_FILE")) http://$ROUTER_HOST:$ROUTER_PORT"
+  else
+    echo "router:   STOPPED"
+  fi
+else
+  echo "router:   disabled (ROUTER_ENABLED=0)"
 fi
 
 if command -v curl >/dev/null 2>&1; then
-  echo -n "health:   "
-  curl -s -o /dev/null -w "http %{http_code}\n" "http://$HOST:$PORT/health" || echo "unreachable"
+  echo -n "health:   llama-server "
+  curl -s -o /dev/null -w "http %{http_code}\n" "http://127.0.0.1:$LLAMA_PORT/health" || echo "unreachable"
+  if [ "$ROUTER_ENABLED" = "1" ]; then
+    echo -n "          via router   "
+    curl -s -o /dev/null -w "http %{http_code}\n" "http://127.0.0.1:$ROUTER_PORT/health" || echo "unreachable"
+  fi
 fi
 
-MODELS_DIR="${MODELS_DIR:-$HOME/local-ai/models}"
 echo "models dir: $MODELS_DIR"
 if [ -d "$MODELS_DIR" ]; then
   ls -1 "$MODELS_DIR"/*.gguf 2>/dev/null | sed 's|.*/||' | sed 's|^|  - |' || true

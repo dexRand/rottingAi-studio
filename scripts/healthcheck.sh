@@ -6,28 +6,38 @@
 # ============================================================================
 set -uo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-[ -f "$REPO_DIR/.env" ] && source "$REPO_DIR/.env"
-HOST="${LLAMA_HOST:-127.0.0.1}"
-PORT="${LLAMA_PORT:-8080}"
-MODELS_DIR="${MODELS_DIR:-$HOME/local-ai/models}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 RC=0
 
+check_url() {
+  local name="$1" url="$2"
+  if curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null | grep -q 200; then
+    echo "  $name $url: ok"
+  else
+    echo "  $name $url: not responding (start with ./ai start)"
+    RC=1
+  fi
+}
+
 echo "== runtime"
-if command -v llama-server >/dev/null 2>&1 || [ -x "$REPO_DIR/llama.cpp/build/bin/llama-server" ]; then
+if llama_bin llama-server "${LLAMA_SERVER_BIN:-llama-server}" >/dev/null; then
   echo "  llama-server: ok"
 else
   echo "  llama-server: MISSING (run ./scripts/install.sh)"
   RC=1
 fi
 
-echo "== endpoint"
-if curl -s -o /dev/null -w "%{http_code}" "http://$HOST:$PORT/health" 2>/dev/null | grep -q 200; then
-  echo "  http://$HOST:$PORT/health: ok"
+echo "== router"
+if (cd "$REPO_DIR" && "$(router_python)" -m router check >/dev/null 2>&1); then
+  echo "  registry: ok ($(router_python))"
 else
-  echo "  http://$HOST:$PORT/health: not responding (start with ./scripts/start.sh <role>)"
+  echo "  registry: PROBLEMS (run ./ai router-check)"
   RC=1
 fi
+
+echo "== endpoints"
+check_url "llama-server" "http://127.0.0.1:$LLAMA_PORT/health"
+[ "$ROUTER_ENABLED" = "1" ] && check_url "router      " "http://127.0.0.1:$ROUTER_PORT/health"
 
 echo "== models (integrity)"
 if [ -f "$MODELS_DIR/SHA256SUMS" ]; then

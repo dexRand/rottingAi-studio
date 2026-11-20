@@ -2,125 +2,183 @@
 # ============================================================================
 # rottingAi-studio — main CLI
 #
-#   ./ai chat [role]        start server (if needed) + open the built-in web UI
-#   ./ai code               coding model (Qwen2.5-Coder-7B)
-#   ./ai fast               superfast 4B model (Qwen3.5-4B)
-#   ./ai ctf                security helper (WhiteRabbitNeo-2.5)
-#   ./ai sysadmin           sysadmin model (Qwen2.5-7B Q5)
-#   ./ai sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
-#   ./ai cli [role]         terminal chat via llama-cli (no server)
-#   ./ai start <role>       start llama-server only
-#   ./ai stop               stop and free RAM
-#   ./ai status             runtime + model + RAM status
-#   ./ai logs               follow the server log
+# One base model always loaded + a router that adds add-ons to the context
+# (see CLAUDE.md). No model switching during normal use.
+#
+#   ./ai                     chat session with the local agent (current dir)
+#   ./ai "prompt"            same, starting with this prompt (-p = one shot)
+#   ./ai agent [-y] [-p] [--no-think] ["prompt"]
+#   ./ai chat                start model + router (if needed) + open the web UI
+#   ./ai start [role]        start model + router only (role: base | lite | ctf)
+#   ./ai stop                stop everything and free RAM
+#   ./ai status              model + router + RAM status
+#   ./ai logs [router]       follow the llama-server (or router) log
+#   ./ai cli [role]          terminal chat via llama-cli (no server, no router)
+#   ./ai route "testo" [--file F] [--show]   show what the router would pick
+#   ./ai route-eval [file.jsonl]             router accuracy on labelled examples
+#   ./ai router-install      venv with Magika (+ experimental GLiClass)
 #   ./ai download [--all|<role>]
-#   ./ai benchmark <role> [threads]
+#   ./ai benchmark [role] [threads]
 #   ./ai upgrade [all|runtime|skills|check]
-#   ./ai healthcheck        integrity + health
+#   ./ai healthcheck         integrity + health
 #   ./ai test [--skills-only] [--models ROLES...]   fleet orchestrator
 #   ./ai help
 # ============================================================================
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-[ -f "$REPO_DIR/.env" ] && source "$REPO_DIR/.env"
-HOST="${LLAMA_HOST:-127.0.0.1}"
-PORT="${LLAMA_PORT:-8080}"
-MODELS_DIR="${MODELS_DIR:-$HOME/local-ai/models}"
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/lib.sh"
 LLAMA_CLI_BIN="${LLAMA_CLI_BIN:-llama-cli}"
-LOG_FILE="$REPO_DIR/runtime/llama-server.log"
 
 usage() {
   cat <<'EOF'
-Usage: ./ai <command> [args]
+Usage: ai                 chat with the local agent in a NEW terminal window (same directory)
+       ai "prompt"        same, starting with this prompt
+       ai -a "prompt"     auto mode: runs commands / edits files WITHOUT asking
+       ai -p "prompt"     one shot in this terminal: answer and exit
+       ai --here          chat in this terminal instead of a new window
+       ai <command> [args]
 
-  chat [role]        start server (if needed) + open the built-in web UI
-  code               coding model (Qwen2.5-Coder-7B)
-  fast               superfast 4B model (Qwen3.5-4B)
-  ctf                security helper (WhiteRabbitNeo-2.5)
-  sysadmin           sysadmin model (Qwen2.5-7B Q5)
-  sysadmin-heavy     optional heavy sysadmin (Gemma 3 12B)
-  cli [role]         terminal chat via llama-cli (no server)
-  start <role>       start llama-server only
-  stop               stop and free RAM
-  status             runtime + model + RAM status
-  logs               follow the server log
+  agent [-y] [--no-think] ["prompt"]
+                     local agent; no prompt = interactive. Every command and
+                     file change asks approval (-y = approve all). Shows the
+                     model's thinking, tool calls and KV-cache stats.
+  chat               start model + router (if needed) + open the web UI
+  start [role]       start model + router only
+  stop               stop everything and free RAM
+  status             model + router + RAM status
+  logs [router]      follow the llama-server (or router) log
+  cli [role]         terminal chat via llama-cli (no server, no router)
+  route "text" [--file F] [--history "msg"] [--show]
+                     show the category + add-ons the router would pick
+  route-eval [file.jsonl] [--backend B] [-v]
+                     router accuracy on labelled examples
+  router-check       validate addons/registry.toml and add-on sizes
+  router-install [--gliclass]
+                     create .venv with Magika (+ experimental GLiClass)
   download [--all|<role>]
-  benchmark <role> [threads]
+  benchmark [role] [threads]
   upgrade [all|runtime|skills|check]
   healthcheck        integrity + health
   test [--skills-only] [--models ROLES...]   fleet orchestrator
   help               this help
 
-Roles: coder | general | fast | ctf | sysadmin | sysadmin-heavy
+Roles: base (default, always on) | lite (smaller alternative) | ctf (rare exception)
 EOF
 }
 
 open_browser() {
-  local url="http://127.0.0.1:$PORT"
+  local url="http://127.0.0.1:$PUBLIC_PORT"
   if command -v xdg-open >/dev/null 2>&1; then
     xdg-open "$url" >/dev/null 2>&1 || true
   fi
   echo "Web UI (local): $url"
   echo "API (OpenAI):   $url/v1"
-  if [ "$HOST" = "0.0.0.0" ]; then
+  if [ "$PUBLIC_HOST" = "0.0.0.0" ]; then
     echo "LAN access:"
     for ip in $(hostname -I 2>/dev/null); do
-      echo "   http://$ip:$PORT/v1"
+      echo "   http://$ip:$PUBLIC_PORT/v1"
     done
   fi
 }
 
-ensure_server() {
-  local role="$1"
-  if ! "$REPO_DIR/scripts/start.sh" "$role"; then
-    echo "note: could not start '$role' (see above). To switch models: ./ai stop first."
-  fi
+# Open the chat in a NEW terminal window (same directory), leaving this shell free.
+# Terminal: $AI_TERMINAL, $TERMINAL, or the first one found below.
+spawn_terminal() {
+  local term="" t cmd
+  for t in "${AI_TERMINAL:-}" "${TERMINAL:-}" kitty konsole gnome-terminal alacritty foot \
+           xfce4-terminal wezterm x-terminal-emulator xterm; do
+    [ -n "$t" ] && command -v "$t" >/dev/null 2>&1 && { term="$t"; break; }
+  done
+  [ -n "$term" ] || return 1
+  # AI_SPAWNED stops the new window from spawning yet another one; on an error
+  # exit the window waits, so the message can be read before it closes.
+  cmd="AI_SPAWNED=1 $(printf '%q ' "$REPO_DIR/ai" "$@"); s=\$?; \
+[ \$s -eq 0 ] || read -rp \"ai è uscito con errore \$s: premi invio per chiudere \""
+  case "$(basename "$term")" in
+    kitty)          setsid -f kitty --directory "$PWD" --title "ai" bash -c "$cmd" ;;
+    konsole)        setsid -f konsole --workdir "$PWD" -e bash -c "$cmd" ;;
+    gnome-terminal) setsid -f gnome-terminal --working-directory="$PWD" -- bash -c "$cmd" ;;
+    alacritty)      setsid -f alacritty --working-directory "$PWD" -e bash -c "$cmd" ;;
+    foot)           setsid -f foot -D "$PWD" bash -c "$cmd" ;;
+    wezterm)        setsid -f wezterm start --cwd "$PWD" -- bash -c "$cmd" ;;
+    *)              setsid -f "$term" -e bash -c "$cmd" ;;   # inherits $PWD
+  esac >/dev/null 2>&1 || return 1
+  echo "ai: chat aperta in una nuova finestra ($(basename "$term"), $PWD)"
 }
 
-cmd="${1:-help}"
-shift || true
+agent_cmd() {
+  # new window unless: one shot (-p), --here, already inside one, or no graphical session
+  local a here=0
+  for a in "$@"; do
+    case "$a" in -p|--print|--here) here=1 ;; esac
+  done
+  if [ "$here" = 0 ] && [ -z "${AI_SPAWNED:-}" ] && [ -t 1 ] \
+     && { [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; }; then
+    spawn_terminal "$@" && exit 0
+    echo "ai: nessun terminale grafico trovato, apro la chat qui" >&2
+  fi
+  # keep the user's current directory: the agent works where you call it
+  PYTHONPATH="$REPO_DIR${PYTHONPATH:+:$PYTHONPATH}" \
+    AGENT_URL="http://127.0.0.1:$PUBLIC_PORT" exec python3 -m agent "$@"
+}
+
+router_cmd() {
+  cd "$REPO_DIR" && exec "$(router_python)" -m router "$@"
+}
+
+# no arguments: open the agent chat session in the current directory
+[ $# -eq 0 ] && agent_cmd
+cmd="$1"
+shift
 
 case "$cmd" in
   chat)
-    role="${1:-general}"
-    ensure_server "$role"
+    "$REPO_DIR/scripts/start.sh" "${1:-$DEFAULT_ROLE}"
     open_browser
-    ;;
-  code)          ensure_server coder; open_browser ;;
-  fast)          ensure_server fast; open_browser ;;
-  ctf)           ensure_server ctf; open_browser ;;
-  sysadmin)       ensure_server sysadmin; open_browser ;;
-  sysadmin-heavy) ensure_server sysadmin-heavy; open_browser ;;
-  cli)
-    role="${1:-general}"
-    source "$REPO_DIR/config/llama.cpp/roles.conf"
-    MODEL_VAR="${role^^}_MODEL"; CTX_VAR="${role^^}_CTX"; THREADS_VAR="THREADS_${role^^}"
-    MODEL="${!MODEL_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THREADS="${!THREADS_VAR:-4}"
-    [ -n "$MODEL" ] || { echo "unknown role: $role" >&2; exit 2; }
-    [ -f "$MODELS_DIR/$MODEL" ] || { echo "model not found: $MODELS_DIR/$MODEL" >&2; exit 1; }
-    exec "$LLAMA_CLI_BIN" -m "$MODELS_DIR/$MODEL" -c "$CTX" -t "$THREADS" -cnv \
-      -sys "$REPO_DIR/config/system-prompts/terse.txt"
     ;;
   start)      "$REPO_DIR/scripts/start.sh" "$@" ;;
   stop)       "$REPO_DIR/scripts/stop.sh" ;;
   status)     "$REPO_DIR/scripts/status.sh" ;;
   logs)
-    if [ ! -f "$LOG_FILE" ]; then
-      echo "no log yet (server never started): $LOG_FILE" >&2
-      exit 1
-    fi
-    exec tail -f "$LOG_FILE"
+    log="$LLAMA_LOG_FILE"
+    [ "${1:-}" = "router" ] && log="$ROUTER_LOG_FILE"
+    [ -f "$log" ] || { echo "no log yet (never started): $log" >&2; exit 1; }
+    exec tail -f "$log"
     ;;
-  download)   "$REPO_DIR/scripts/download-models.sh" "${@:---all}" ;;
-  benchmark)  "$REPO_DIR/scripts/benchmark.sh" "$@" ;;
+  cli)
+    role="${1:-$DEFAULT_ROLE}"
+    MODEL_VAR="${role^^}_MODEL"; CTX_VAR="${role^^}_CTX"; THREADS_VAR="THREADS_${role^^}"
+    MODEL="${!MODEL_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THREADS="${!THREADS_VAR:-${THREADS:-4}}"
+    [ -n "$MODEL" ] || { echo "unknown role: $role" >&2; exit 2; }
+    [ -f "$MODELS_DIR/$MODEL" ] || { echo "model not found: $MODELS_DIR/$MODEL" >&2; exit 1; }
+    LLAMA_CLI="$(llama_bin llama-cli "$LLAMA_CLI_BIN")" || { echo "llama-cli not found" >&2; exit 1; }
+    exec "$LLAMA_CLI" -m "$MODELS_DIR/$MODEL" -c "$CTX" -t "$THREADS" -cnv \
+      -sys "$REPO_DIR/config/system-prompts/terse.txt"
+    ;;
+  route)          router_cmd route "$@" ;;
+  route-eval)     router_cmd eval "$@" ;;
+  router-check)   router_cmd check ;;
+  router-install)
+    python3 -m venv "$REPO_DIR/.venv"
+    "$REPO_DIR/.venv/bin/pip" install --upgrade pip
+    "$REPO_DIR/.venv/bin/pip" install -r "$REPO_DIR/router/requirements.txt"
+    if [ "${1:-}" = "--gliclass" ]; then
+      # CPU-only PyTorch wheels: avoids a multi-GB CUDA download
+      "$REPO_DIR/.venv/bin/pip" install --extra-index-url https://download.pytorch.org/whl/cpu \
+        -r "$REPO_DIR/router/requirements-gliclass.txt"
+    fi
+    echo "Router venv ready: $REPO_DIR/.venv (restart with ./ai stop && ./ai start)"
+    ;;
+  download)   "$REPO_DIR/scripts/download-models.sh" "${@:-$DEFAULT_ROLE}" ;;
+  benchmark)  "$REPO_DIR/scripts/benchmark.sh" "${1:-$DEFAULT_ROLE}" "${@:2}" ;;
   upgrade)    "$REPO_DIR/scripts/upgrade.sh" "${@:-all}" ;;
   healthcheck) "$REPO_DIR/scripts/healthcheck.sh" ;;
-  test)       exec python3 "$REPO_DIR/scripts/orchestrate.py" "$@" ;;
+  test)       cd "$REPO_DIR" && exec "$(router_python)" "$REPO_DIR/scripts/orchestrate.py" "$@" ;;
+  agent)      agent_cmd "$@" ;;
   help|--help|-h) usage ;;
+  -*)        agent_cmd "$cmd" "$@" ;;   # agent options: -p, -y, --no-think
   *)
-    echo "unknown command: $cmd" >&2
-    usage >&2
-    exit 2
+    # anything that is not a command is a prompt for the agent
+    agent_cmd "$cmd" "$@"
     ;;
 esac

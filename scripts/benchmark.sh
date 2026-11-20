@@ -5,10 +5,10 @@
 # benchmarks/results/<timestamp>/.
 #
 #   ./scripts/benchmark.sh <role> [threads...]
-#   ./scripts/benchmark.sh coder "4 6 8"
+#   ./scripts/benchmark.sh base "4 6 8"
 #
 # Everything written to benchmarks/results/ is MEASURED on this machine.
-# Peak RAM is best checked while serving: ./scripts/ai status
+# Peak RAM is best checked while serving: ./ai status
 # ============================================================================
 set -euo pipefail
 
@@ -27,7 +27,7 @@ if ! command -v "$LLAMA_BENCH_BIN" >/dev/null 2>&1; then
   fi
 fi
 
-ROLE="${1:-}"
+ROLE="${1:-${DEFAULT_ROLE:-base}}"
 THREADS="${2:-"2 4 6 8"}"
 [ -n "$ROLE" ] || { echo "usage: $0 <role> [threads]"; exit 2; }
 
@@ -57,4 +57,4 @@ done
 
 echo "Results in: $OUT/"
 echo "Key columns: pp512 (prompt t/s), tg128 (generation t/s), load (ms)."
-echo "Peak RAM while serving: ./scripts/ai start <role> && ./scripts/ai status"
+echo "Peak RAM while serving: ./ai start <role> && ./ai status"

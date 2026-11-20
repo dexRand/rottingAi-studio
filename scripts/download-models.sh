@@ -3,7 +3,7 @@
 # Download the GGUF models (never versioned). Run from anywhere.
 #   ./scripts/download-models.sh [--all | <role>]
 #
-# Roles: coder, general, fast, ctf, sysadmin, sysadmin-heavy
+# Roles: base (default, always on), lite (smaller alternative), ctf (rare)
 # Uses `huggingface-cli` when available (verifies LFS integrity); falls back
 # to curl with resume support.
 # ============================================================================
@@ -14,20 +14,18 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODELS_DIR="${MODELS_DIR:-$HOME/local-ai/models}"
 mkdir -p "$MODELS_DIR"
 
-# repo -> filename  (verified against Hugging Face on 2026-11-10)
+# repo -> filename  (verified against Hugging Face on 2026-11-20)
 declare -A SPECS=(
-  ["coder"]="Qwen/Qwen2.5-Coder-7B-Instruct-GGUF|qwen2.5-coder-7b-instruct-q4_k_m.gguf"
-  ["general"]="Qwen/Qwen3-8B-GGUF|Qwen3-8B-Q4_K_M.gguf"
-  ["fast"]="unsloth/Qwen3.5-4B-GGUF|Qwen3.5-4B-Q4_K_M.gguf"
+  ["base"]="unsloth/Qwen3.5-9B-GGUF|Qwen3.5-9B-Q4_K_M.gguf"
+  ["lite"]="unsloth/Qwen3.5-4B-GGUF|Qwen3.5-4B-Q4_K_M.gguf"
   ["ctf"]="bartowski/WhiteRabbitNeo-2.5-Qwen-2.5-Coder-7B-GGUF|WhiteRabbitNeo-2.5-Qwen-2.5-Coder-7B-Q4_K_M.gguf"
-  ["sysadmin"]="bartowski/Qwen2.5-7B-Instruct-GGUF|Qwen2.5-7B-Instruct-Q5_K_M.gguf"
-  ["sysadmin-heavy"]="bartowski/google_gemma-3-12b-it-GGUF|google_gemma-3-12b-it-Q4_K_M.gguf"
 )
 
-wanted="${1:---all}"
+wanted="${1:-base}"
 
 download_one() {
-  local role="$1" repo="$2" file="$3" target="$MODELS_DIR/$file"
+  local role="$1" repo="$2" file="$3"
+  local target="$MODELS_DIR/$file"
   if [ -f "$target" ]; then
     echo "== $role: already present ($target) — skip"
     return 0
@@ -62,7 +60,7 @@ run() {
 }
 
 if [ "$wanted" != "--all" ] && [ -z "${SPECS[$wanted]:-}" ]; then
-  echo "usage: $0 [--all | coder | general | fast | ctf | sysadmin | sysadmin-heavy]" >&2
+  echo "usage: $0 [--all | base | lite | ctf]" >&2
   exit 2
 fi
 
