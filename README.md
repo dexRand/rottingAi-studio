@@ -53,6 +53,13 @@ role-tuned GGUF at a time and serves an OpenAI-compatible API on `:8080`.
 OpenCode (and optionally Open WebUI) consume that same endpoint — the full
 reasoning is in `docs/architecture.md`.
 
+The `StegSuite MCP` node is the one cross-repo link: it is **not** part of this
+repo. It is served by the separate [CTF Toolbox](https://github.com/dexRand/ctf-docker)
+repository — a Docker Compose workbench for CTFs, built around StegSuite — and
+wired in here through `config/opencode/opencode.jsonc`. Start it over there with
+`./ctf up`; when it is not running, OpenCode starts normally, just without the
+CTF tools.
+
 ## Features
 
 - **Native llama.cpp** (`llama-server` + `llama-cli`), AVX2/FMA/F16C build.

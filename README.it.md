@@ -55,6 +55,12 @@ alla volta ed espone un'API OpenAI-compatibile su `:8080`. OpenCode (e
 opzionalmente Open WebUI) consumano lo stesso endpoint — il ragionamento
 completo è in `docs/architecture.md`.
 
+Il nodo `StegSuite MCP` è l'unico collegamento tra repo: **non** fa parte di
+questa repo. È servito dalla repo separata [CTF Toolbox](https://github.com/dexRand/ctf-docker)
+— un workbench Docker Compose per CTF, costruito attorno a StegSuite — e qui è
+collegato tramite `config/opencode/opencode.jsonc`. Avvialo da lì con `./ctf up`;
+quando non è attivo, OpenCode parte normalmente, solo senza gli strumenti CTF.
+
 ## Funzionalità
 
 - **llama.cpp nativo** (`llama-server` + `llama-cli`), build AVX2/FMA/F16C.
