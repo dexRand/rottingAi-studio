@@ -1,0 +1,3 @@
+# Experimental zero-shot backend (see config/router.toml for measured accuracy).
+# Installed by: ./ai router-install --gliclass  (CPU-only PyTorch index)
+gliclass>=0.1.22

@@ -1,0 +1,37 @@
+# ============================================================================
+# Router settings (router/, see CLAUDE.md). Environment variables in .env win
+# over the network settings here (ROUTER_HOST / ROUTER_PORT / LLAMA_PORT).
+# ============================================================================
+
+[router]
+# Intent backend:
+#   keywords  -> keyword rules from addons/registry.toml (no dependencies) [default]
+#   gliclass  -> zero-shot GLiClass (experimental, see below)
+#   auto      -> gliclass if installed (./ai router-install), else keywords
+#
+# Measured 2026-11-20 on 8 Italian prompts (`./ai route-eval --backend gliclass`):
+#   gliclass-edge-v3.0 1/8, gliclass-base-v3.0 5/8, gliclass-modern-base-v3.0 2/8.
+#   No model recognised "other topic" prompts (a book, the weather) — they all
+#   scored 0.6-0.9 on sysadmin. Zero-shot GLiClass is NOT usable in Italian as
+#   is: the planned fix is a small classifier trained on real Italian examples
+#   (mmBERT-small / SetFit), measured with `./ai route-eval`.
+backend = "keywords"
+gliclass_model = "knowledgator/gliclass-edge-v3.0"
+
+# Below this confidence the router makes no guess: no category, no add-ons
+# (the base model answers with its general behaviour).
+threshold = 0.5
+
+# How many recent user messages the router reads (not only the last prompt).
+history_messages = 3
+# Score multiplier for the older messages: the last one counts in full. With 0.6
+# one old keyword (0.6 -> 0.36) stays below threshold, a clear old topic
+# (3+ hits: 0.95 -> 0.57) still carries a vague follow-up like "e adesso?".
+history_weight = 0.6
+
+# Hard budget for all add-ons injected into ONE conversation (approx tokens,
+# 1 token ~ 4 chars). Add-ons that do not fit are skipped and logged.
+max_addon_tokens = 4000
+
+# Use Magika on attached files and on fenced code blocks in the prompt.
+magika = true

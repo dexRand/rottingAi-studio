@@ -1,0 +1,7 @@
+# Optional router dependencies. Without them the router still works with the
+# keyword backend and no file detection (stdlib only).
+#
+# Install into the repo venv with:  ./ai router-install
+magika>=1.0
+# Experimental GLiClass backend (pulls PyTorch, ~1 GB): ./ai router-install --gliclass
+#   -> installs router/requirements-gliclass.txt with the CPU-only torch index

@@ -1,0 +1,109 @@
+# ============================================================================
+# Add-on registry — read by the router (router/registry.py, see CLAUDE.md).
+#
+# The router picks ONE category + zero or more add-ons, then appends the add-on
+# texts at the END of the context (inside the current user turn, before the
+# original prompt), so the KV cache of everything before stays valid.
+#
+# Add-on types, cheapest first: instructions -> skill -> tool -> lora.
+# `file` paths are relative to the repo root. Skill files have their YAML
+# frontmatter stripped before injection.
+# Content is written in English on purpose: fewer tokens with the Qwen
+# tokenizer and better instruction-following on small models. The model still
+# answers in the user's language.
+# ============================================================================
+
+# --- categories -------------------------------------------------------------
+# `label` is what the zero-shot classifier sees; keep it short and concrete.
+
+[categories.coding]
+label = "programming: writing, debugging, testing or reviewing source code"
+default_addons = []            # language add-ons come from Magika / keywords
+keywords = ["codice", "code", "funzione", "function", "classe", "class", "bug", "errore nel codice",
+            "traceback", "stack trace", "script", "refactor", "test", "compila", "programma", "api"]
+
+[categories.sysadmin]
+label = "linux system administration: shell commands, services, disks, network, packages"
+default_addons = ["linux-commands"]
+keywords = ["linux", "server", "comando", "terminale", "shell", "servizio", "systemd", "disco",
+            "partizione", "permessi", "utente", "rete", "firewall", "ssh", "log", "processo",
+            "installare", "pacchetto", "debian", "ubuntu", "arch",
+            # operations on files and folders
+            "sposta", "spostare", "copia", "copiare", "rinomina", "rinominare", "cancella",
+            "elimina", "cartella", "cartelle", "directory", "home", "desktop", "percorso",
+            "mv", "cp", "rm", "mkdir", "ls"]
+
+# "shared" is not a category the router can pick: its add-ons are activated by
+# their own signals (keywords / Magika) whatever the category is.
+[categories.shared]
+label = ""
+default_addons = []
+keywords = []
+
+# --- coding -----------------------------------------------------------------
+
+[addons.python]
+category = "coding"
+type = "instructions"
+file = "addons/coding/python.md"
+label = "Python programming"
+magika = ["python"]            # Magika labels that trigger this add-on directly
+keywords = ["python", "pip", "venv", "pytest", "django", "flask", "fastapi", "pandas", "numpy",
+            "asyncio", "pyproject", ".py"]
+
+# --- sysadmin ---------------------------------------------------------------
+
+[addons.linux-commands]
+category = "sysadmin"
+type = "instructions"
+file = "addons/sysadmin/linux-commands.md"
+label = "Linux shell commands"
+magika = ["shell"]
+keywords = ["bash", "zsh", "chmod", "chown", "systemctl", "journalctl", "grep", "sed", "awk",
+            "find", "rsync", "tar", "df", "du", "lsblk", "mount", "ip addr", "ss -", "sudo", "cron"]
+
+[addons.arch-sysadmin]
+category = "sysadmin"
+type = "skill"
+file = ".opencode/skills/arch-sysadmin/SKILL.md"
+label = "Arch Linux / CachyOS administration"
+magika = []
+keywords = ["arch", "cachyos", "pacman", "paru", "yay", "aur", "pkgbuild", "btrfs", "snapper",
+            "zram", "mkinitcpio"]
+
+[addons.proxmox]
+category = "sysadmin"
+type = "skill"
+file = ".opencode/skills/proxmox/SKILL.md"
+label = "Proxmox VE virtualization"
+magika = []
+keywords = ["proxmox", "pve", "qm ", "pct ", "lxc", "vzdump", "zfs", "ceph"]
+
+# --- shared (any category) ----------------------------------------------------
+
+[addons.docker]
+category = "shared"
+type = "skill"
+file = ".opencode/skills/docker/SKILL.md"
+label = "Docker containers and Compose"
+magika = ["dockerfile"]
+keywords = ["docker", "dockerfile", "compose", "container", "immagine docker", "podman"]
+
+# --- skill catalog ----------------------------------------------------------
+# OpenCode-only skills grouped by category. They are too large to inject
+# (2.5k–10k tokens each on a 16K context), so the router does NOT append them:
+# OpenCode loads them on demand through its own skill tool. Kept here so the
+# skill set is organized by category in one place.
+[catalog]
+coding = ["api-and-interface-design", "browser-testing-with-devtools", "ci-cd-and-automation",
+          "code-review-and-quality", "code-simplification", "constraint-driven-development",
+          "context-engineering", "debugging-and-error-recovery", "deprecation-and-migration",
+          "documentation-and-adrs", "doubt-driven-development", "frontend-ui-engineering",
+          "git-workflow-and-versioning", "idea-refine", "incremental-implementation", "interview-me",
+          "observability-and-instrumentation", "performance-optimization",
+          "planning-and-task-breakdown", "security-and-hardening", "shipping-and-launch",
+          "source-driven-development", "spec-driven-development", "test-driven-development"]
+sysadmin = ["local-ai"]
+ctf = ["ctf-toolbox", "ctf-web", "ctf-crypto", "ctf-pwn", "ctf-reverse", "ctf-forensics",
+       "ctf-osint", "ctf-misc", "ctf-malware", "ctf-ai-ml", "ctf-similar-search", "ctf-writeup"]
+meta = ["find-skills", "using-agent-skills"]
