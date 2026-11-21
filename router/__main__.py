@@ -24,6 +24,11 @@ def cmd_route(args: argparse.Namespace) -> int:
     if args.backend:
         settings.backend = args.backend
     router = Router(settings=settings)
+    warned = False
+    if args.file and (router.detector is None or not router.detector.available):
+        print("warning: file detection is disabled (Magika not installed) — `--file` is "
+              "ignored. Run `./ai router-install` to enable it.", file=sys.stderr)
+        warned = True
     texts = [*args.history, args.text]
     decision = router.route(texts, files=[Path(f) for f in args.file])
     print(json.dumps(decision.to_dict(), ensure_ascii=False, indent=2))
@@ -33,7 +38,7 @@ def cmd_route(args: argparse.Namespace) -> int:
         ids = [p.addon for p in decision.addons]
         print("\n--- text appended before the prompt ---")
         print(render_addons(router.registry, ids) if ids else "(nothing)")
-    return 0
+    return 1 if warned else 0
 
 
 def cmd_serve(args: argparse.Namespace) -> int:
