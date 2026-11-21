@@ -18,7 +18,7 @@ Branch off `main` for every issue:
 <type>/<issue-number>-<short-slug>
 ```
 
-`feat/12-add-colibri` · `fix/34-role-mapping` · `docs/8-architecture` · `chore/…` · `refactor/…`
+`feat/12-single-model-router` · `fix/34-role-mapping` · `docs/8-architecture` · `chore/…` · `refactor/…`
 
 Never commit directly to `main`.
 

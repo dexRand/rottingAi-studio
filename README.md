@@ -3,7 +3,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Inference: CPU-only](https://img.shields.io/badge/inference-CPU--only-important)](https://github.com/ggml-org/llama.cpp)
-[![OS: Linux](https://img.shields.io/badge/OS-Debian%20%2F%20Arch-blue)](https://cachyos.org/)
+[![OS: Linux](https://img.shields.io/badge/OS-Linux-blue)](https://www.kernel.org/)
 
 A minimal, reproducible **local AI stack** for CPU-only machines (16 GB RAM, AVX2),
 built on **llama.cpp** and **OpenCode**: **one base model always loaded**, plus
