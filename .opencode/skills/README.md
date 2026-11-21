@@ -53,6 +53,16 @@ Tutte le skill qui sotto sono vendored (copia locale) per funzionare **offline**
 - **test-driven-development** — TDD
 - **using-agent-skills** — come usare le skill stesse
 
+## Categorie e router
+
+Le skill sono raggruppate per categoria nel `[catalog]` di
+`addons/registry.toml` (coding, sysadmin, ctf, meta). Le skill **piccole**
+(`docker`, `arch-sysadmin`, `proxmox`, ~350–600 token) sono anche **add-on** che
+il router aggiunge da solo al contesto quando servono. Le altre sono troppo
+grandi per un contesto di 16K (2.500–10.000 token): le carica OpenCode su
+richiesta con il suo tool skill. Le cartelle restano piatte perché OpenCode le
+rileva come `.opencode/skills/<id>/SKILL.md`.
+
 ## Struttura
 
 ```

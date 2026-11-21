@@ -1,10 +1,24 @@
 # tests
 
-Test di integrazione minimi (da popolare dopo l'installazione):
+## Unit test (nessun modello necessario)
 
-- `test_server_up.sh` — avvio/stop del server e check `/health`
-- `test_tool_calling.sh` — round-trip tool calling via API OpenAI-compatibile
-- `test_opencode.sh` — verifica che OpenCode risolva `local/coder`
+```bash
+python3 -m unittest discover -s tests -v
+```
 
-Questa fase è solo repo + script: i test verranno scritti al momento
-dell'implementazione.
+`test_router.py` copre registro, decisioni del router, e soprattutto le regole
+del composer sulla cache KV: prefisso identico tra turni, add-on mai scaricati,
+retry identico, nuova conversazione pulita, contenuti multi-part, e il proxy
+(inoltro, header `X-Router-*`, pass-through degli altri endpoint) contro un
+finto llama-server.
+
+## Test con modelli reali
+
+```bash
+./ai test                 # skill + config + registro + smoke test per ruolo
+./ai test --skills-only   # solo controlli statici
+./ai route-eval -v        # accuratezza del router su router/examples/smoke.jsonl
+```
+
+`./ai test` avvia llama-server su una porta privata (8091) e manda un prompt
+anche attraverso il router: non tocca uno stack già avviato.

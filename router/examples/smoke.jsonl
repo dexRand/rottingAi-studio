@@ -1,0 +1,15 @@
+{"text": "come vedo quale processo occupa la porta 8080 e come lo chiudo?", "category": "sysadmin", "addons": ["linux-commands"]}
+{"text": "il servizio nginx non parte dopo il riavvio, cosa controllo?", "category": "sysadmin", "addons": ["linux-commands"]}
+{"text": "come aggiungo un utente al gruppo sudo?", "category": "sysadmin", "addons": ["linux-commands"]}
+{"text": "pacman mi dà errore di chiavi PGP durante l'aggiornamento", "category": "sysadmin", "addons": ["linux-commands", "arch-sysadmin"]}
+{"text": "scrivimi una funzione che legge un csv e calcola la media di una colonna", "category": "coding", "addons": []}
+{"text": "ho un errore TypeError quando chiamo il metodo della classe", "category": "coding", "addons": []}
+{"text": "come creo un venv e installo le dipendenze con pip?", "category": "coding", "addons": ["python"]}
+{"text": "perché questo codice va in errore?\n```\nimport json\ndef load(p):\n    with open(p) as f:\n        return json.load(f)\nprint(load('x.json')['a'])\n```", "category": "coding", "addons": ["python"]}
+{"text": "come elenco i container docker che sono usciti?", "category": null, "addons": ["docker"]}
+{"text": "ciao, mi consigli un libro da leggere?", "category": null, "addons": []}
+{"text": "che tempo fa domani a Milano?", "category": null, "addons": []}
+{"text": "scrivi una mail al mio capo per chiedere ferie", "category": null, "addons": []}
+{"text": "ora sposta il file in home", "history": ["correggi il file bugtest.py"], "category": "sysadmin", "addons": ["linux-commands"]}
+{"text": "sposta registro_voti.py nella cartella home", "category": "sysadmin", "addons": ["linux-commands"]}
+{"text": "e adesso cosa faccio?", "history": ["pacman mi dà errore di chiavi PGP durante l'aggiornamento"], "category": "sysadmin", "addons": ["linux-commands", "arch-sysadmin"]}

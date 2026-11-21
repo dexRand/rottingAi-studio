@@ -1,19 +1,18 @@
 # Modelli — istruzioni di download e integrità
 
 I file GGUF **non** sono versionati (troppo pesanti). Vengono scaricati in
-`$MODELS_DIR` (default `~/local-ai/models`) tramite `scripts/download-models.sh`.
+`$MODELS_DIR` (default `~/local-ai/models`) con `./ai download [ruolo|--all]`.
 
-## Modelli raccomandati (verificati su Hugging Face il 2026-11-10)
+## Modelli (verificati su Hugging Face il 2026-11-20)
 
 | Ruolo | Modello | File | Dimensione | Fonte |
 |---|---|---|---|---|
-| Coding | Qwen2.5-Coder-7B-Instruct | `qwen2.5-coder-7b-instruct-q4_k_m.gguf` | 4,68 GB | ufficiale Qwen |
-| General / IT | Qwen3-8B | `Qwen3-8B-Q4_K_M.gguf` | 5,03 GB | ufficiale Qwen |
-| Sysadmin (qualità) | Gemma 3 12B | `google_gemma-3-12b-it-Q4_K_M.gguf` | 7,30 GB | community bartowski |
-| Sysadmin (veloce) | Qwen2.5-7B-Instruct | `Qwen2.5-7B-Instruct-Q5_K_M.gguf` | 5,44 GB | community bartowski |
+| `base` | Qwen3.5-9B | `Qwen3.5-9B-Q4_K_M.gguf` | 5,68 GB | unsloth/Qwen3.5-9B-GGUF |
+| `lite` | Qwen3.5-4B | `Qwen3.5-4B-Q4_K_M.gguf` | 2,74 GB | unsloth/Qwen3.5-4B-GGUF |
+| `ctf` | WhiteRabbitNeo-2.5 (Qwen2.5-Coder-7B) | `WhiteRabbitNeo-2.5-Qwen-2.5-Coder-7B-Q4_K_M.gguf` | 4,68 GB | bartowski |
 
-Quantizzazioni: `Q4_K_M` (≈4,5 bit) e `Q5_K_M` (≈5,5 bit) sono i K-quant
-standard di llama.cpp. Non sono i pesi originali FP16 (≈15 GB per un 7B).
+Di norma serve solo `base` (`./ai download`). `Q4_K_M` (≈4,5 bit) è il K-quant
+standard di llama.cpp.
 
 ## Integrità
 
@@ -24,12 +23,9 @@ standard di llama.cpp. Non sono i pesi originali FP16 (≈15 GB per un 7B).
    sha256sum *.gguf > SHA256SUMS
    sha256sum -c SHA256SUMS
    ```
-   `scripts/healthcheck.sh` usa `SHA256SUMS` se presente.
+   `./ai healthcheck` usa `SHA256SUMS` se presente.
 
 ## Opzioni alternative
 
-- Quant dinamiche Unsloth (`UD-Q4_K_XL`, via bartowski/unsloth): utilizzabili
-  dentro llama.cpp se vuoi risparmiare qualche punto di qualità/perplexità,
-  senza alcun beneficio di velocità su CPU. Non necessarie.
-- Tutto da un'unica fonte community: `bartowski/...` ripubblica anche
-  Qwen3-8B e Qwen2.5-Coder, se preferisci uniformità di origine.
+- Quant dinamiche Unsloth (`UD-Q4_K_XL`): un po' più di qualità per bit, nessun
+  beneficio di velocità su CPU. Non necessarie.

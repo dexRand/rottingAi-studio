@@ -8,6 +8,10 @@ models/*.ggml
 !models/README.md
 !models/SHA256SUMS
 
+# Router venv (./ai router-install)
+.venv/
+__pycache__/
+
 # Runtime state
 runtime/
 *.pid

@@ -6,29 +6,37 @@ Checks (in order):
                     (required for OpenCode discovery), and files parse.
   2. Config       — roles.conf defines model/alias/ctx for each role;
                     opencode.jsonc is valid JSONC; model files exist on disk.
-  3. Runtime      — per role: start llama-server, wait /health, send a smoke
-                    prompt (measure t/s), test tool calling, then stop.
+  3. Router       — addons/registry.toml is valid (files, categories, catalog).
+  4. Runtime      — per role: start llama-server on a private test port, wait
+                    /health, send a smoke prompt (measure t/s), test tool
+                    calling, send a prompt THROUGH the router (add-on injected),
+                    then stop. Does not touch a running ./ai stack.
 
 Usage:
     ./scripts/orchestrate.py                 # skills + config + runtime (full)
     ./scripts/orchestrate.py --skills-only   # fast: only skills + config
-    ./scripts/orchestrate.py --models coder general  # only these roles
+    ./scripts/orchestrate.py --models base           # only these roles
 """
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import shutil
 import subprocess
+import threading
 import sys
 import time
 import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO)
 MODELS_DIR = os.environ.get("MODELS_DIR", os.path.expanduser("~/local-ai/models"))
-SERVER = os.path.join(REPO, "llama.cpp", "build", "bin", "llama-server")
-HOST = os.environ.get("LLAMA_HOST", "127.0.0.1")
-PORT = int(os.environ.get("LLAMA_PORT", "8080"))
+SERVER = shutil.which(os.environ.get("LLAMA_SERVER_BIN", "llama-server")) or os.path.join(
+    REPO, "llama.cpp", "build", "bin", "llama-server")
+HOST = "127.0.0.1"
+PORT = int(os.environ.get("ORCH_PORT", "8091"))   # private: never the live stack's port
+ROUTED_PROMPT = "Come vedo quale processo occupa la porta 8080 con systemctl o ss?"
 SMOKE = "Rispondi in una riga: cos'è una variabile d'ambiente?"
 
 
@@ -52,10 +60,10 @@ def load_roles() -> dict[str, dict[str, str]]:
     return roles
 
 
-def _post(payload: dict, timeout: int = 300) -> dict:
+def _post(payload: dict, timeout: int = 300, port: int = PORT) -> dict:
     body = json.dumps(payload).encode()
     req = urllib.request.Request(
-        f"http://{HOST}:{PORT}/v1/chat/completions",
+        f"http://{HOST}:{port}/v1/chat/completions",
         data=body, headers={"Content-Type": "application/json"},
     )
     t0 = time.time()
@@ -118,6 +126,34 @@ def check_config(roles: dict) -> list[str]:
     return problems
 
 
+def check_registry() -> list[str]:
+    from router.registry import Registry
+    try:
+        return Registry.load().validate()
+    except Exception as e:  # malformed TOML etc.
+        return [f"registry.toml: {e}"]
+
+
+def routed_test(alias: str) -> str:
+    """Send one prompt through an in-process router proxy to the test server."""
+    from http.server import ThreadingHTTPServer
+
+    from router.compose import Composer
+    from router.proxy import make_handler
+    from router.router import Router
+
+    proxy = ThreadingHTTPServer((HOST, 0), make_handler(Composer(Router()), HOST, PORT))
+    threading.Thread(target=proxy.serve_forever, daemon=True).start()
+    try:
+        data, _ = _post({"model": alias, "messages": [{"role": "user", "content": ROUTED_PROMPT}],
+                         "max_tokens": 60, "temperature": 0.2}, port=proxy.server_address[1])
+        ans = (data["choices"][0]["message"].get("content") or "").strip()
+        return "ok" if ans else "empty answer"
+    finally:
+        proxy.shutdown()
+        proxy.server_close()
+
+
 def check_models(roles: dict) -> tuple[int, int]:
     present = missing = 0
     for cfg in roles.values():
@@ -161,7 +197,11 @@ def smoke_test(role: str, cfg: dict) -> tuple[bool, str]:
             tc = "ok" if d2["choices"][0]["message"].get("tool_calls") else "no tool_calls"
         except Exception:
             tc = "error"
-        return True, f"answer ok | {tps} | tool calling: {tc}"
+        try:
+            routed = routed_test(cfg["alias"])
+        except Exception as e:
+            routed = f"error ({str(e)[:60]})"
+        return True, f"answer ok | {tps} | tool calling: {tc} | via router: {routed}"
     except Exception as e:
         return False, str(e)[:120]
     finally:
@@ -195,6 +235,13 @@ def main() -> int:
     print(f"[config] {len(cfg_problems)} problems")
     for p in cfg_problems:
         print(f"  ! {p}")
+
+    # router registry
+    reg_problems = check_registry()
+    print(f"[router] {len(reg_problems)} problems")
+    for p in reg_problems:
+        print(f"  ! {p}")
+    cfg_problems += reg_problems
 
     # models
     present, missing = check_models(roles)

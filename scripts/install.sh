@@ -12,12 +12,12 @@ install_deps() {
   echo "== Installing helper tools (huggingface_hub for model downloads)..."
   # huggingface-cli from the python-huggingface-hub package (official repos)
   if ! command -v huggingface-cli >/dev/null 2>&1; then
+    # No `pip install --user`: Debian/Arch Python is externally managed (PEP 668).
     if command -v pipx >/dev/null 2>&1; then
       pipx install huggingface_hub
-    elif command -v pip >/dev/null 2>&1; then
-      pip install --user huggingface_hub
     else
-      echo "note: install huggingface_hub manually (pipx/pip) for HF downloads" >&2
+      echo "note: huggingface-cli not installed (optional): downloads fall back to curl." >&2
+      echo "      to get it: pipx install huggingface_hub" >&2
     fi
   fi
 }
@@ -29,11 +29,15 @@ case "$MODE" in
     if [ ! -d llama.cpp ]; then
       git clone --depth 1 https://github.com/ggml-org/llama.cpp.git
     fi
+    # LLAMA_CURL only lets llama.cpp download models itself (-hf); we download
+    # with ./ai download, so enable it only when the libcurl headers exist.
+    CURL=OFF
+    pkg-config --exists libcurl 2>/dev/null && CURL=ON
     cmake -S llama.cpp -B llama.cpp/build \
       -DCMAKE_BUILD_TYPE=Release \
       -DGGML_NATIVE=ON \
       -DGGML_OPENMP=ON \
-      -DLLAMA_CURL=ON
+      -DLLAMA_CURL="$CURL"
     cmake --build llama.cpp/build -j"$(nproc)"
     echo
     echo "Binaries built in: llama.cpp/build/bin/"

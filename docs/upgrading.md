@@ -29,7 +29,9 @@ modello/quant:
 2. Aggiorna `config/llama.cpp/roles.conf` (file + alias + ctx).
 3. Aggiorna `config/opencode/opencode.jsonc` (il `modelID` deve combaciare con
    l'alias).
-4. `./scripts/ai download <role>` e `./scripts/ai benchmark <role>`.
+4. `./ai download <role>` e `./ai benchmark <role>`.
+5. Rileggi gli add-on con il nuovo modello (`./ai route "..." --show` + una
+   prova reale): istruzioni pensate per un modello possono servire meno a un altro.
 
 ## Riproducibilità / pinning (opzionale)
 

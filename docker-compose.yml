@@ -1,7 +1,7 @@
 # ============================================================================
 # rottingAi-studio — optional services (all OFF by default)
 #
-# The inference engine (llama.cpp) runs NATIVE on the host, not in Docker.
+# The inference engine (llama.cpp) and the router run NATIVE on the host.
 # This compose file only contains OPTIONAL auxiliary services, each behind a
 # profile. `docker compose up` (no args) starts nothing.
 #
@@ -16,8 +16,10 @@ services:
     ports:
       - "127.0.0.1:${WEBUI_PORT:-3000}:8080"
     environment:
-      # llama-server speaks the OpenAI API; point Open WebUI at it.
-      OPENAI_API_BASE_URL: "http://host.docker.internal:${LLAMA_PORT:-8080}/v1"
+      # Point Open WebUI at the router (OpenAI API, adds the add-ons).
+      # The router must listen beyond localhost for the container to reach it:
+      # set ROUTER_HOST=0.0.0.0 (+ LLAMA_API_KEY) in .env.
+      OPENAI_API_BASE_URL: "http://host.docker.internal:${ROUTER_PORT:-8080}/v1"
       OPENAI_API_KEY: "sk-no-key-required"
     extra_hosts:
       - "host.docker.internal:host-gateway"

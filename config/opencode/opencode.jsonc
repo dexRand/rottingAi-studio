@@ -6,56 +6,42 @@
 
   "providers": {
     "local": {
-      "name": "Local llama.cpp",
+      "name": "Local llama.cpp (router)",
       "package": "@opencode/ai/providers/openai-compatible",
       "settings": {
+        // The router proxy (public port). It adds the add-ons chosen for each
+        // request, then forwards to llama-server (internal, 127.0.0.1:8081).
         "baseURL": "http://127.0.0.1:8080/v1"
         // Se imposti LLAMA_API_KEY in .env, esportala e decommenta:
         // "apiKey": "{env:LLAMA_API_KEY}"
       },
+      // One base model always loaded: no model switching during work.
+      // `lite` and `ctf` are alternatives you start explicitly (./ai start lite|ctf).
       "models": {
-        "coder": {
-          "modelID": "qwen2.5-coder-7b",
-          "name": "Coding (local)",
+        "base": {
+          "modelID": "qwen3.5-9b",
+          "name": "Base (local, router)",
           "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
           "limit": { "context": 16384, "output": 8192 }
         },
-        "general": {
-          "modelID": "qwen3-8b",
-          "name": "General (local)",
-          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
-          "limit": { "context": 16384, "output": 8192 }
-        },
-        "fast": {
+        "lite": {
           "modelID": "qwen3.5-4b",
-          "name": "Fast (local)",
+          "name": "Lite (local, router)",
           "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
           "limit": { "context": 16384, "output": 8192 }
         },
         "ctf": {
           "modelID": "whiterabbitneo-7b",
-          "name": "CTF (local)",
+          "name": "CTF (local, exception)",
           "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
           "limit": { "context": 16384, "output": 8192 }
-        },
-        "sysadmin": {
-          "modelID": "qwen2.5-7b",
-          "name": "Sysadmin (local)",
-          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
-          "limit": { "context": 16384, "output": 8192 }
-        },
-        "sysadmin-heavy": {
-          "modelID": "gemma-3-12b",
-          "name": "Sysadmin heavy (local)",
-          "capabilities": { "tools": true, "input": ["text"], "output": ["text"] },
-          "limit": { "context": 32768, "output": 8192 }
         }
       }
     }
   },
 
   // Default model for new sessions (change with /models at any time).
-  "model": "local/coder",
+  "model": "local/base",
 
   // StegSuite (CTF toolbox, ~/Progetti/ctf-docker) via MCP. Used only when it is up:
   // if StegSuite is not running, the connection fails in 3 s and OpenCode simply
