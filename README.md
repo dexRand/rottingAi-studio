@@ -78,19 +78,26 @@ writing a Markdown file and an entry in `addons/registry.toml`, then
 
 ## Quick start
 
+First run only: build llama.cpp, then let `setup` fetch everything else.
+
 ```bash
 git clone https://github.com/dexRand/rottingAi-studio.git
 cd rottingAi-studio
 
 cp .env.example .env                # adjust ports / API key if needed
 ./scripts/install.sh native         # build llama.cpp with -march=native
-./ai download                       # base model: Qwen3.5-9B Q4_K_M (5.7 GB)
-./ai router-install                 # optional: Magika (file/code detection)
+./ai setup                          # default model (Qwen3.5-9B) + router deps (Magika)
+./ai setup --all                    # also lite + ctf models (~13 GB total)
 
 ./ai chat                           # start model + router, open the web UI
 ./ai route "come vedo chi usa la porta 8080?" --show   # what would the router add?
 ./ai stop                           # stop and free the RAM
 ```
+
+- `./ai setup` is the one-shot for first run: it checks the llama-server binary,
+  downloads the default model, and installs the router venv (Magika → file/code
+  detection). On a 16 GB machine that only needs `lite`, use `./ai download lite`.
+- `./ai` alone opens the terminal agent; `./ai "prompt"` starts it with a prompt.
 
 ## Usage
 
@@ -111,6 +118,7 @@ cp .env.example .env                # adjust ports / API key if needed
 ./ai router-check        validate the registry and add-on sizes
 ./ai router-install      .venv with Magika (+ experimental GLiClass)
 ./ai download [--all|<role>]
+./ai setup [--all] [--no-router]
 ./ai benchmark [role] [threads]
 ./ai upgrade [all|runtime|skills|check]
 ./ai healthcheck         integrity + health

@@ -18,6 +18,7 @@
 #   ./ai route-eval [file.jsonl]             router accuracy on labelled examples
 #   ./ai router-install      venv with Magika (+ experimental GLiClass)
 #   ./ai download [--all|<role>]
+#   ./ai setup [--all] [--no-router]  one-shot: binaries check + models + router deps
 #   ./ai benchmark [role] [threads]
 #   ./ai upgrade [all|runtime|skills|check]
 #   ./ai healthcheck         integrity + health
@@ -56,6 +57,9 @@ Usage: ./ai                 chat with the local agent in a NEW terminal window (
   router-install [--gliclass]
                      create .venv with Magika (+ experimental GLiClass)
   download [--all|<role>]
+  setup [--all] [--no-router]
+                     one-shot first-run: check llama-server binary, download the
+                     default model (+ lite/ctf with --all), install router deps
   benchmark [role] [threads]
   upgrade [all|runtime|skills|check]
   healthcheck        integrity + health
@@ -170,6 +174,7 @@ case "$cmd" in
     echo "Router venv ready: $REPO_DIR/.venv (restart with ./ai stop && ./ai start)"
     ;;
   download)   "$REPO_DIR/scripts/download-models.sh" "${@:-$DEFAULT_ROLE}" ;;
+  setup)      "$REPO_DIR/scripts/setup.sh" "$@" ;;
   benchmark)  "$REPO_DIR/scripts/benchmark.sh" "${1:-$DEFAULT_ROLE}" "${@:2}" ;;
   upgrade)    "$REPO_DIR/scripts/upgrade.sh" "${@:-all}" ;;
   healthcheck) "$REPO_DIR/scripts/healthcheck.sh" ;;

@@ -79,19 +79,27 @@ uno: un file Markdown + una voce in `addons/registry.toml`, poi `./ai router-che
 
 ## Avvio rapido
 
+Solo la prima volta: compila llama.cpp, poi `setup` scarica tutto il resto.
+
 ```bash
 git clone https://github.com/dexRand/rottingAi-studio.git
 cd rottingAi-studio
 
 cp .env.example .env                # porte / API key se serve
 ./scripts/install.sh native         # compila llama.cpp con -march=native
-./ai download                       # modello base: Qwen3.5-9B Q4_K_M (5,7 GB)
-./ai router-install                 # opzionale: Magika (riconoscimento file/codice)
+./ai setup                          # modello di default (Qwen3.5-9B) + dipendenze router (Magika)
+./ai setup --all                    # anche i modelli lite e ctf (~13 GB totali)
 
 ./ai chat                           # avvia modello + router, apre la web UI
 ./ai route "come vedo chi usa la porta 8080?" --show   # cosa aggiungerebbe il router?
 ./ai stop                           # ferma e libera la RAM
 ```
+
+- `./ai setup` è il comando unico per il primo avvio: controlla il binario
+  `llama-server`, scarica il modello di default e installa il venv del router
+  (Magika → riconoscimento file/codice). Su una macchina da 16 GB che serve solo
+  `lite`, usa `./ai download lite`.
+- `./ai` da solo apre l'agente da terminale; `./ai "prompt"` lo avvia con un prompt.
 
 ## Uso
 
@@ -112,6 +120,7 @@ cp .env.example .env                # porte / API key se serve
 ./ai router-check        valida il registro e le dimensioni degli add-on
 ./ai router-install      .venv con Magika (+ GLiClass sperimentale)
 ./ai download [--all|<ruolo>]
+./ai setup [--all] [--no-router]
 ./ai benchmark [ruolo] [thread]
 ./ai upgrade [all|runtime|skills|check]
 ./ai healthcheck         integrità + salute
