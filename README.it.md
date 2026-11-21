@@ -35,18 +35,11 @@ specialista su richiesta aggiungendo add-on testuali.
 ## Architettura
 
 ```mermaid
-flowchart LR
-    subgraph Core["rottingAi-studio · nativo"]
-        R["router proxy<br/>parole chiave · Magika<br/>(GLiClass: sperimentale)"]
-        A[("add-on<br/>addons/registry.toml")]
-        LS["llama-server :8081<br/>UN modello base · --jinja"]
-    end
-
-    U["tu / OpenCode / web UI"] -->|"API OpenAI :8080"| R
-    R -->|"categoria + add-on"| A
-    A -->|"aggiunti IN FONDO<br/>al contesto"| R
-    R -->|"prompt utente intatto"| LS
-    MCP["StegSuite MCP"] -. "opzionale · CTF" .-> U
+flowchart TB
+    MCP["StegSuite MCP<br/>opzionale, CTF"] -.-> U
+    U["tu / OpenCode / web UI"] -->|"API :8080"| R["router proxy<br/>parole chiave + Magika"]
+    R -->|"sceglie gli add-on"| A[("add-on<br/>registry.toml")]
+    R -->|"prompt + add-on"| L["llama-server :8081<br/>un modello"]
 ```
 
 1. Il prompt dell'utente resta **intatto**.

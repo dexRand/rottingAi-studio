@@ -33,18 +33,11 @@ specialist on demand by adding text add-ons instead.
 ## Architecture
 
 ```mermaid
-flowchart LR
-    subgraph Core["rottingAi-studio · native"]
-        R["router proxy<br/>keywords · Magika<br/>(GLiClass: experimental)"]
-        A[("add-ons<br/>addons/registry.toml")]
-        LS["llama-server :8081<br/>ONE base model · --jinja"]
-    end
-
-    U["you / OpenCode / web UI"] -->|"OpenAI API :8080"| R
-    R -->|"category + add-ons"| A
-    A -->|"appended at the END<br/>of the context"| R
-    R -->|"user prompt intact"| LS
-    MCP["StegSuite MCP"] -. "optional · CTF" .-> U
+flowchart TB
+    MCP["StegSuite MCP<br/>optional, CTF"] -.-> U
+    U["you / OpenCode / web UI"] -->|"API :8080"| R["router proxy<br/>keywords + Magika"]
+    R -->|"picks add-ons"| A[("add-ons<br/>registry.toml")]
+    R -->|"prompt + add-ons"| L["llama-server :8081<br/>one model"]
 ```
 
 1. The user's prompt stays **intact**.
