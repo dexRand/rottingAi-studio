@@ -34,25 +34,29 @@ Never commit directly to `main`.
 - Push your branch and open a PR against `main`.
 - Reference the issue in the body with `Closes #<n>`.
 - One PR per issue, kept small and reviewable.
-- Run the checks below before asking for review.
-- A maintainer reviews and merges — don't self-merge.
+- Run the checks below before opening the PR.
 
-### After merge: delete the branch
+### When it passes: merge it yourself
 
-Once the PR is merged and the issue closed, **delete the branch** (remote and
-local). Branches always start from the latest `main`, so nobody works on stale
-code:
+Once the workflow is green, **merge the PR yourself** — the author (human or
+agent) accepts the PR and merges it into `main`, no need to wait for anyone:
+
+```bash
+gh pr merge <PR>        # accept + merge with main
+```
+
+A human can still request changes on anything non-trivial, but a green workflow
+is enough to merge.
+
+### After the merge: delete the branch
+
+Once merged (the issue closes by itself via `Closes #<n>`), **delete the branch**
+so everyone always branches from the latest `main`:
 
 ```bash
 git push origin --delete <branch>   # remote
 git branch -D <branch>              # local
 ```
-
-### Auto-merge for agent PRs
-
-A PR opened by an agent — or any PR whose required checks are green — can merge
-by itself: turn on **"Enable auto-merge"** on the PR and GitHub merges it as soon
-as the workflow passes, no human click. Human PRs still get a manual review.
 
 ## Checks before a PR
 
