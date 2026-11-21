@@ -29,6 +29,16 @@ Never commit directly to `main`.
   `README: document the ctf-docker link` — not "updated readme".
 - Never commit `.env`, model files (`*.gguf` / `*.bin`), or `runtime/` state.
 
+## Keep docs and API in sync
+
+A change is not done until its docs are. In the same PR, update:
+
+- **README** (`README.md` + `README.it.md`) — new/changed commands, roles, ports, add-ons, requirements.
+- **`docs/`** — architecture, models, upgrading, troubleshooting: keep them true to reality.
+- **API surface** — endpoints (`/v1`, `/router/status`), headers, ports, and the MCP config
+  (`config/opencode/opencode.jsonc`, `.env.example`): if you add or change one, document it.
+- **`CLAUDE.md`** and any vendored skill you touched.
+
 ## Pull requests
 
 - Push your branch and open a PR against `main`.
