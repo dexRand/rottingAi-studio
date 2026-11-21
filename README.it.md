@@ -36,12 +36,13 @@ specialista su richiesta aggiungendo add-on testuali.
 
 ```mermaid
 flowchart LR
-    U[tu / OpenCode / web UI] -->|"API OpenAI :8080"| R
     subgraph Core["rottingAi-studio · nativo"]
         R["router proxy<br/>parole chiave · Magika<br/>(GLiClass: sperimentale)"]
         A[("add-on<br/>addons/registry.toml")]
         LS["llama-server :8081<br/>UN modello base · --jinja"]
     end
+
+    U["tu / OpenCode / web UI"] -->|"API OpenAI :8080"| R
     R -->|"categoria + add-on"| A
     A -->|"aggiunti IN FONDO<br/>al contesto"| R
     R -->|"prompt utente intatto"| LS

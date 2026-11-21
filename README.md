@@ -34,12 +34,13 @@ specialist on demand by adding text add-ons instead.
 
 ```mermaid
 flowchart LR
-    U[you / OpenCode / web UI] -->|"OpenAI API :8080"| R
     subgraph Core["rottingAi-studio · native"]
         R["router proxy<br/>keywords · Magika<br/>(GLiClass: experimental)"]
         A[("add-ons<br/>addons/registry.toml")]
         LS["llama-server :8081<br/>ONE base model · --jinja"]
     end
+
+    U["you / OpenCode / web UI"] -->|"OpenAI API :8080"| R
     R -->|"category + add-ons"| A
     A -->|"appended at the END<br/>of the context"| R
     R -->|"user prompt intact"| LS
