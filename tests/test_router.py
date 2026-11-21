@@ -71,6 +71,20 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["pacman da errore di chiavi", "e adesso cosa faccio?"])
         self.assertEqual(d.category, "sysadmin")
 
+    def test_ctf_prompt_routes_to_ctf_triage(self):
+        d = self.router.route(["trova il flag in questo binario"])
+        self.assertEqual(d.category, "ctf")
+        self.assertIn("ctf-triage", [p.addon for p in d.addons])
+
+    def test_web_ctf_prompt_routes_to_ctf(self):
+        d = self.router.route(["bypassa la login con SQL injection"])
+        self.assertEqual(d.category, "ctf")
+
+    def test_non_ctf_prompt_is_not_captured_by_ctf(self):
+        d = self.router.route(["mi consigli un libro giallo?"])
+        self.assertIsNone(d.category)
+        self.assertEqual(d.addons, [])
+
     def test_already_loaded_addons_are_not_repeated(self):
         d = self.router.route(["systemctl restart nginx non va"], loaded={"linux-commands"})
         self.assertNotIn("linux-commands", [p.addon for p in d.addons])

@@ -61,6 +61,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `linux-commands` | sysadmin | instructions | 1650 | default of `sysadmin`, Magika `shell` |
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
+| `ctf-triage` | ctf | instructions | 590 | any CTF request (default) |
 | `docker` | shared | skill | 350 | docker, compose, container… (any category) |
 
 Types, cheapest first: instructions → skill → tool → LoRA (only if measured

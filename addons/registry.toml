@@ -33,6 +33,19 @@ keywords = ["linux", "server", "comando", "terminale", "shell", "servizio", "sys
             "elimina", "cartella", "cartelle", "directory", "home", "desktop", "percorso",
             "mv", "cp", "rm", "mkdir", "ls"]
 
+[categories.ctf]
+label = "security challenge: exploit, reverse engineering, forensics, cryptography, CTF"
+default_addons = ["ctf-triage"]
+keywords = ["ctf", "capture the flag", "flag", "exploit", "payload", "shellcode",
+            "buffer overflow", "rop", "seccomp", "pwn", "binary exploit", "reverse engineering",
+            "reverse engineer", "reversing", "disassemble", "disassembla", "disassemblare",
+            "decompile", "decompila", "decompilare",
+            "stego", "steganografia", "steganography", "forensics", "forensic", "memory dump",
+            "disk dump", "malware", "infostealer", "ransomware", "md5", "sha256",
+            "virus", "phishing", "jwt", "sql injection", "sqli", "xss", "ssrf", "rce", "lfi",
+            "crypto", "cryptography", "cipher", "cifrare", "decifra", "decifrare", "rsa", "aes",
+            "elliptic", "osint", "esfiltrato", "esfiltrazione", "exfiltration", "exfiltrated"]
+
 # "shared" is not a category the router can pick: its add-ons are activated by
 # their own signals (keywords / Magika) whatever the category is.
 [categories.shared]
@@ -78,6 +91,19 @@ file = ".opencode/skills/proxmox/SKILL.md"
 label = "Proxmox VE virtualization"
 magika = []
 keywords = ["proxmox", "pve", "qm ", "pct ", "lxc", "vzdump", "zfs", "ceph"]
+
+# --- ctf --------------------------------------------------------------------
+
+[addons.ctf-triage]
+category = "ctf"
+type = "instructions"
+file = "addons/ctf/triage.md"
+label = "CTF triage"
+magika = []                    # file detection is wired separately
+keywords = ["ctf", "capture the flag", "flag", "exploit", "payload", "shellcode",
+            "buffer overflow", "pwn", "reverse engineering", "stego", "forensics",
+            "malware", "md5", "jwt", "sql injection", "crypto", "cipher", "rsa", "osint",
+            "esfiltrato", "exfiltration"]
 
 # --- shared (any category) ----------------------------------------------------
 
