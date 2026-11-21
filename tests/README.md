@@ -25,3 +25,9 @@ anche attraverso il router: non tocca uno stack già avviato. Usa lo stesso
 `--chat-template-file` di `./ai start` e verifica il **tool calling**: un
 modello che non emette `tool_calls` è un FAIL (l'agente `ai` e gli MCP server
 non funzionerebbero).
+
+> `router/examples/smoke.jsonl` è **illustrativo**: i casi non-CTF sono stati
+> scritti a mano assieme alle keyword che li valutano, quindi il punteggio di
+> `route-eval` non è una misura indipendente (i casi CTF, invece, sono prompt
+> reali dell'utente). Diventerà affidabile solo con un classificatore addestrato
+> su esempi reali (mmBERT-small / SetFit).
