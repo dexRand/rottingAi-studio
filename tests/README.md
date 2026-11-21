@@ -21,4 +21,7 @@ finto llama-server.
 ```
 
 `./ai test` avvia llama-server su una porta privata (8091) e manda un prompt
-anche attraverso il router: non tocca uno stack già avviato.
+anche attraverso il router: non tocca uno stack già avviato. Usa lo stesso
+`--chat-template-file` di `./ai start` e verifica il **tool calling**: un
+modello che non emette `tool_calls` è un FAIL (l'agente `ai` e gli MCP server
+non funzionerebbero).

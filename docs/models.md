@@ -21,6 +21,10 @@ sempre caricato**, tool calling nativo, italiano, licenze permissive.
 - **`ctf` — WhiteRabbitNeo-2.5-Qwen-2.5-Coder-7B Q4_K_M** (4,68 GB): l'unica
   eccezione al modello unico. Fine-tune di sicurezza per CTF/pentesting
   autorizzato, avviato esplicitamente (`./ai start ctf`) nei casi rari.
+  Usa `config/llama.cpp/qwen2.5-tools.jinja`: il template dentro il GGUF è
+  ChatML semplice, **senza tool calling** (il modello "inventava" l'output dei
+  tool). Con il template Qwen2.5 emette `tool_calls` validi (misurato
+  2026-11-21: due chiamate su due prompt, più un giro completo con risultato).
 
 ## Modelli rimossi nel passaggio al modello unico
 

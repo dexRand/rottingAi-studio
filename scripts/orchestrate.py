@@ -43,7 +43,7 @@ SMOKE = "Rispondi in una riga: cos'è una variabile d'ambiente?"
 # --- helpers -----------------------------------------------------------------
 
 def load_roles() -> dict[str, dict[str, str]]:
-    """Parse roles.conf into {role: {model, alias, ctx, reasoning}}."""
+    """Parse roles.conf into {role: {model, alias, ctx, reasoning, chat_template}}."""
     roles: dict[str, dict[str, str]] = {}
     with open(os.path.join(REPO, "config", "llama.cpp", "roles.conf")) as f:
         for line in f:
@@ -53,7 +53,7 @@ def load_roles() -> dict[str, dict[str, str]]:
             k, v = line.split("=", 1)
             key = k.strip()
             val = v.strip().strip('"')
-            for suffix in ("_MODEL", "_ALIAS", "_CTX", "_REASONING"):
+            for suffix in ("_MODEL", "_ALIAS", "_CTX", "_REASONING", "_CHAT_TEMPLATE"):
                 if key.endswith(suffix):
                     role = key[: -len(suffix)].lower()
                     roles.setdefault(role, {})[suffix[1:].lower()] = val
@@ -168,10 +168,20 @@ def smoke_test(role: str, cfg: dict) -> tuple[bool, str]:
     model = os.path.join(MODELS_DIR, cfg["model"])
     if not os.path.isfile(model):
         return False, "model file missing"
+    # Same template as `./ai start`: without it the smoke test runs a different
+    # configuration from the one shipped (the ctf GGUF has no tool support in
+    # its embedded template, so this test used to hide a broken tool calling).
+    extra = []
+    template = cfg.get("chat_template", "")
+    if template:
+        path = template if os.path.isabs(template) else os.path.join(REPO, template)
+        if not os.path.isfile(path):
+            return False, f"chat template not found: {template}"
+        extra = ["--chat-template-file", path]
     proc = subprocess.Popen(
         [SERVER, "--model", model, "--alias", cfg["alias"], "--host", HOST,
          "--port", str(PORT), "--ctx-size", cfg.get("ctx", "16384"),
-         "--threads", "4", "--jinja",
+         "--threads", "4", "--jinja", *extra,
          "--reasoning", cfg.get("reasoning", "auto")],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
@@ -185,18 +195,21 @@ def smoke_test(role: str, cfg: dict) -> tuple[bool, str]:
         tps = f"{ct / max(dt, 0.001):.1f} tok/s" if ct else "n/a"
         if not ans:
             return False, f"empty answer ({tps})"
-        # tool calling (best-effort)
-        tc = "n/a"
+        # tool calling: the `ai` agent and the MCP servers depend on it, so a
+        # model that never emits tool_calls is a failure, not a note.
         try:
             tools = [{"type": "function", "function": {"name": "get_weather",
                       "description": "Get weather", "parameters": {"type": "object",
                       "properties": {"city": {"type": "string"}}, "required": ["city"]}}}]
             d2, _ = _post({"model": cfg["alias"], "messages": [{"role": "user",
-                           "content": "Che tempo fa a Roma?"}], "tools": tools,
+                           "content": "Usa il tool per sapere che tempo fa a Roma."}], "tools": tools,
                            "tool_choice": "auto", "max_tokens": 80, "temperature": 0.1})
-            tc = "ok" if d2["choices"][0]["message"].get("tool_calls") else "no tool_calls"
+            calls = d2["choices"][0]["message"].get("tool_calls")
         except Exception:
-            tc = "error"
+            calls = None
+        if not calls:
+            return False, f"answer ok ({tps}) but no tool_calls"
+        tc = "ok"
         try:
             routed = routed_test(cfg["alias"])
         except Exception as e:
