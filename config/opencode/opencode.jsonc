@@ -43,10 +43,10 @@
   // Default model for new sessions (change with /models at any time).
   "model": "local/base",
 
-  // StegSuite (CTF toolbox, ~/Progetti/ctf-docker) via MCP. Used only when it is up:
+  // StegSuite (CTF toolbox, ~/__Github/CTF) via MCP. Used only when it is up:
   // if StegSuite is not running, the connection fails in 3 s and OpenCode simply
   // starts without its tools (`opencode mcp list` shows the state). Start it with
-  // `./ctf up` in the ctf-docker repo. Files to analyze: ctf-docker/data/inbox/.
+  // `./ctf up` in the CTF repo. Files to analyze: CTF/data/inbox/.
   "mcp": {
     "servers": {
       "stegsuite": {
@@ -55,7 +55,7 @@
         "oauth": false,          // API key only (header), no OAuth
         "codemode": false,       // native tool list: better for small local models
         "timeout": { "startup": 3000, "execution": 330000 }  // analyze(wait_s=300)
-        // with STEGSUITE_API_KEY set in ctf-docker/.env:
+        // with STEGSUITE_API_KEY set in CTF/.env:
         // "headers": { "X-API-Key": "{env:STEGSUITE_API_KEY}" }
       }
     }
