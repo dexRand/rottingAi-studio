@@ -113,7 +113,7 @@ type = "skill"
 file = ".opencode/skills/docker/SKILL.md"
 label = "Docker containers and Compose"
 magika = ["dockerfile"]
-keywords = ["docker", "dockerfile", "compose", "container", "immagine docker", "podman"]
+keywords = ["docker", "dockerfile", "compose", "immagine docker", "podman"]
 
 # --- skill catalog ----------------------------------------------------------
 # OpenCode-only skills grouped by category. They are too large to inject
