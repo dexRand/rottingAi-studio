@@ -52,7 +52,10 @@ def load_roles() -> dict[str, dict[str, str]]:
                 continue
             k, v = line.split("=", 1)
             key = k.strip()
-            val = v.strip().strip('"')
+            # strip inline comments ("...=value  # note") — bash does this when
+            # sourcing roles.conf, so the parser must too, or `--reasoning`
+            # ends up as `off"  # thinking off by default...`.
+            val = v.split("#", 1)[0].strip().strip('"')
             for suffix in ("_MODEL", "_ALIAS", "_CTX", "_REASONING", "_CHAT_TEMPLATE"):
                 if key.endswith(suffix):
                     role = key[: -len(suffix)].lower()
@@ -182,6 +185,8 @@ def smoke_test(role: str, cfg: dict) -> tuple[bool, str]:
         [SERVER, "--model", model, "--alias", cfg["alias"], "--host", HOST,
          "--port", str(PORT), "--ctx-size", cfg.get("ctx", "16384"),
          "--threads", "4", "--jinja", *extra,
+         "--parallel", os.environ.get("LLAMA_PARALLEL", "1"),
+         "--cache-ram", os.environ.get("LLAMA_CACHE_RAM", "1024"),
          "--reasoning", cfg.get("reasoning", "auto")],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
