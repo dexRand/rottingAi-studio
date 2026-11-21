@@ -31,12 +31,12 @@ LLAMA_CLI_BIN="${LLAMA_CLI_BIN:-llama-cli}"
 
 usage() {
   cat <<'EOF'
-Usage: ai                 chat with the local agent in a NEW terminal window (same directory)
-       ai "prompt"        same, starting with this prompt
-       ai -a "prompt"     auto mode: runs commands / edits files WITHOUT asking
-       ai -p "prompt"     one shot in this terminal: answer and exit
-       ai --here          chat in this terminal instead of a new window
-       ai <command> [args]
+Usage: ./ai                 chat with the local agent in a NEW terminal window (same directory)
+       ./ai "prompt"        same, starting with this prompt
+       ./ai -a "prompt"     auto mode: runs commands / edits files WITHOUT asking
+       ./ai -p "prompt"     one shot in this terminal: answer and exit
+       ./ai --here          chat in this terminal instead of a new window
+       ./ai <command> [args]
 
   agent [-y] [--no-think] ["prompt"]
                      local agent; no prompt = interactive. Every command and

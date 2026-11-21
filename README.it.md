@@ -101,10 +101,10 @@ cp .env.example .env                # porte / API key se serve
 ## Uso
 
 ```text
-ai                       chat con l'AGENTE locale nella cartella corrente: esegue
+./ai                       chat con l'AGENTE locale nella cartella corrente: esegue
                          comandi e legge/modifica file (chiede approvazione),
                          mostra il ragionamento, gli strumenti e le statistiche della cache
-ai "prompt"              uguale, partendo da questo prompt; si apre in una NUOVA finestra
+./ai "prompt"              uguale, partendo da questo prompt; si apre in una NUOVA finestra
                          (--here = questo terminale, -p = una sola risposta, -a = auto mode: niente conferme)
 ./ai chat                avvia modello + router (se serve) + apre la web UI
 ./ai start [ruolo]       avvia solo modello + router (ruolo: base | lite | ctf)

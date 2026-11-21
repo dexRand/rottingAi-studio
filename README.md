@@ -100,10 +100,10 @@ cp .env.example .env                # adjust ports / API key if needed
 ## Usage
 
 ```text
-ai                       chat with the local AGENT in the current directory:
+./ai                       chat with the local AGENT in the current directory:
                          it runs commands and reads/edits files (asks approval),
                          shows its thinking, tool calls and KV-cache stats
-ai "prompt"              same, starting with this prompt; opens in a NEW terminal window
+./ai "prompt"              same, starting with this prompt; opens in a NEW terminal window
                          (--here = this terminal, -p = one shot, -a = auto mode: no approvals)
 ./ai chat                start model + router (if needed) + open the web UI
 ./ai start [role]        start model + router only (role: base | lite | ctf)
