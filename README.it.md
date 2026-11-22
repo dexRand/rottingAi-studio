@@ -67,6 +67,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `docker` | condiviso | skill | 350 | docker, compose, container… (qualsiasi categoria) |
 | `regex` | condiviso | istruzioni | 290 | regex, lookahead, lookbehind, gruppo di cattura… (qualsiasi categoria) |
 | `git` | condiviso | istruzioni | 380 | rebase, branch, commit, stash, pull request… (qualsiasi categoria) |
+| `sql` | condiviso | istruzioni | 370 | query, JOIN, GROUP BY, postgres, sqlite… (qualsiasi categoria) |
 
 Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
 necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne

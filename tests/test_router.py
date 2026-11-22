@@ -110,6 +110,14 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("git", [p.addon for p in d.addons])
 
+    def test_sql_prompt_routes_to_sql(self):
+        d = self.router.route(["scrivi una query con JOIN e GROUP BY su postgres"])
+        self.assertIn("sql", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_sql(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("sql", [p.addon for p in d.addons])
+
 
 class ComposerTest(unittest.TestCase):
     def setUp(self):

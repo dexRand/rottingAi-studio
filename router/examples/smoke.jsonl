@@ -23,3 +23,4 @@
 {"text": "Questa challenge usa un token JWT, rompilo per trovare la flag.", "category": "ctf", "addons": ["ctf-triage"]}
 {"text": "come scrivo una regex con lookahead per estrarre l'anno da una data?", "category": null, "addons": ["regex"]}
 {"text": "come faccio il rebase del branch feature sul main?", "category": null, "addons": ["git"]}
+{"text": "come scrivo una query SQL con JOIN e GROUP BY su postgres?", "category": null, "addons": ["sql"]}
