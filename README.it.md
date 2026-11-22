@@ -66,6 +66,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `ctf-triage` | ctf | istruzioni | 590 | qualsiasi richiesta CTF (default) |
 | `docker` | condiviso | skill | 350 | docker, compose, container… (qualsiasi categoria) |
 | `regex` | condiviso | istruzioni | 290 | regex, lookahead, lookbehind, gruppo di cattura… (qualsiasi categoria) |
+| `git` | condiviso | istruzioni | 380 | rebase, branch, commit, stash, pull request… (qualsiasi categoria) |
 
 Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
 necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne

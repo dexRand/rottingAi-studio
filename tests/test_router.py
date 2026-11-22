@@ -102,6 +102,14 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("regex", [p.addon for p in d.addons])
 
+    def test_git_prompt_routes_to_git(self):
+        d = self.router.route(["come faccio il rebase del branch sul main?"])
+        self.assertIn("git", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_git(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("git", [p.addon for p in d.addons])
+
 
 class ComposerTest(unittest.TestCase):
     def setUp(self):
