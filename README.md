@@ -67,6 +67,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `regex` | shared | instructions | 290 | regex, lookahead, lookbehind, capture group… (any category) |
 | `git` | shared | instructions | 380 | rebase, branch, commit, stash, pull request… (any category) |
 | `sql` | shared | instructions | 370 | query, JOIN, GROUP BY, postgres, sqlite… (any category) |
+| `http` | shared | instructions | 352 | http, api, endpoint, curl, fetch, request, bearer, webhook… (any category) |
 
 Types, cheapest first: instructions → skill → tool → LoRA (only if measured
 necessary). Budget: `max_addon_tokens` (4000) per conversation. Add one by

@@ -123,6 +123,15 @@ label = "Docker containers and Compose"
 magika = ["dockerfile"]
 keywords = ["docker", "dockerfile", "compose", "immagine docker", "podman"]
 
+[addons.http]
+category = "shared"
+type = "instructions"
+file = "addons/shared/http.md"
+label = "HTTP and REST API calls"
+magika = []
+keywords = ["http", "https", "api", "endpoint", "curl", "fetch", "request", "status code",
+            "bearer", "rest", "json", "webhook"]
+
 [addons.regex]
 category = "shared"
 type = "instructions"

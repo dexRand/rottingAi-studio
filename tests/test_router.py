@@ -152,6 +152,16 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("sql", [p.addon for p in d.addons])
 
+    def test_http_prompt_routes_to_http(self):
+        d = self.router.route(["come chiamo un endpoint API da python con curl?"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("python", [p.addon for p in d.addons])
+        self.assertIn("http", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_http(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("http", [p.addon for p in d.addons])
+
 
 class JavaScriptAddonTest(unittest.TestCase):
     def setUp(self):
