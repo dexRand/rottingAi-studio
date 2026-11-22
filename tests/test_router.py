@@ -262,6 +262,28 @@ class JavaScriptAddonTest(unittest.TestCase):
         self.assertNotIn("javascript", [p.addon for p in d.addons])
 
 
+class VueAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_vue_keyword_routes_to_coding(self):
+        d = self.router.route(["scrivi un componente vue con la composition api"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("vue", [p.addon for p in d.addons])
+
+    def test_vue_ecosystem_keywords_route_to_vue(self):
+        d = self.router.route(["come uso pinia in un progetto vue3 con vite"])
+        self.assertIn("vue", [p.addon for p in d.addons])
+
+    def test_dot_vue_extension_routes_to_vue(self):
+        d = self.router.route(["correggi il componente App.vue"])
+        self.assertIn("vue", [p.addon for p in d.addons])
+
+    def test_python_prompt_does_not_pull_vue(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("vue", [p.addon for p in d.addons])
+
+
 class MagikaRoutingTest(unittest.TestCase):
     """A binary with no textual hint must still reach ctf-triage."""
 
