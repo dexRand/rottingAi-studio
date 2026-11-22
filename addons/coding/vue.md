@@ -11,7 +11,7 @@ Apply everything below unless the user asks otherwise.
 - Composition API first; Options API only if the project already uses it. Share logic with composables (`useX`) returning refs/functions, not mixins.
 - `<script setup>` is the default SFC: top-level bindings reach the template; `defineProps`/`defineEmits`/`defineExpose` are macros (no import).
 - `ref(x)` for primitives, `.value` in JS (auto-unwrapped in templates). `reactive(obj)` for objects; don't destructure it (loses reactivity) -> `toRefs`. `computed` for derived state (no side effects/async). `watch(source, cb, { immediate, deep })` for side effects; `watchEffect` when deps are implicit.
-- Props down, events up: `defineProps<{ user: User }>()`, `defineEmits<{ save: [id: number] }>()`; never mutate props. `v-model` = `:modelValue` + `@update:modelValue`; `defineModel()` in custom components.
+- Props down, events up: `defineProps<{ user: User }>()`, `defineEmits<{ save: [id: number] }>()`; never mutate props. `v-model` = `:modelValue` + `@update:modelValue`; `defineModel()` (3.4+) in custom components.
 - Lifecycle: `onMounted` for DOM/external setup, `onUnmounted` for cleanup (timers, listeners), `onUpdated`/`onActivated` when needed.
 
 ## Router & state

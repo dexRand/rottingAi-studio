@@ -272,8 +272,12 @@ class VueAddonTest(unittest.TestCase):
         self.assertIn("vue", [p.addon for p in d.addons])
 
     def test_vue_ecosystem_keywords_route_to_vue(self):
-        d = self.router.route(["come uso pinia in un progetto vue3 con vite"])
+        d = self.router.route(["come uso pinia in un progetto vue3 con vite.config"])
         self.assertIn("vue", [p.addon for p in d.addons])
+
+    def test_italian_word_vite_does_not_pull_vue(self):
+        d = self.router.route(["devo avvitare una vite nel muro"])
+        self.assertNotIn("vue", [p.addon for p in d.addons])
 
     def test_dot_vue_extension_routes_to_vue(self):
         d = self.router.route(["correggi il componente App.vue"])

@@ -78,7 +78,7 @@ type = "instructions"
 file = "addons/coding/vue.md"
 label = "Vue 3"
 magika = []
-keywords = ["vue", "vuejs", "vue3", "composition api", "pinia", "vite", "nuxt", ".vue"]
+keywords = ["vue", "vuejs", "vue3", "composition api", "pinia", "vite.config", "@vitejs", "npm create vite", "nuxt", ".vue"]
 
 # --- sysadmin ---------------------------------------------------------------
 
