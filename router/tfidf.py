@@ -87,6 +87,13 @@ def _resolve(model_path: str | Path) -> Path:
 
 def train(datasets: Iterable[str | Path], model_path: str | Path = DEFAULT_MODEL) -> dict:
     """Fit the classifier on labeled JSONL, save it, and report stats."""
+    try:
+        import sklearn  # noqa: F401
+    except ImportError as err:
+        raise ImportError(
+            "scikit-learn not installed — run ./ai router-install --tfidf"
+        ) from err
+
     X, y = load_labeled_jsonl(datasets)
     pipeline = build_pipeline()
     pipeline.fit(X, y)
@@ -133,7 +140,10 @@ class TfidfClassifier:
         """Softmax over the class margins, dropping the `none` class."""
         import numpy as np
 
-        decision = self._pipe.decision_function([text])[0]
+        decision = np.atleast_1d(self._pipe.decision_function([text])[0])
+        if decision.shape[0] == 1:
+            # Binary LinearSVC returns a single signed margin (class at index 1).
+            decision = np.array([-decision[0], decision[0]])
         exp = np.exp(decision - np.max(decision))
         probs = exp / exp.sum()
         return {
