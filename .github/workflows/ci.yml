@@ -1,0 +1,29 @@
+name: ci
+
+# Pure-Python gate (no llama-server / GGUF). The model-dependent checks
+# (./ai test smoke, token/timing) cannot run here and stay on a local machine.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: unit tests (stdlib, no model)
+        run: python3 -m unittest discover -s tests -v
+
+      - name: router registry + add-on sizes
+        run: ./ai router-check
+
+      - name: keyword eval (informational, no model)
+        run: |
+          ./ai route-eval router/examples/smoke.jsonl
+          ./ai route-eval router/examples/real.jsonl
