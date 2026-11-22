@@ -80,6 +80,14 @@ label = "Laravel (PHP)"
 magika = ["php"]
 keywords = ["laravel", "php", "eloquent", "blade", "artisan", "migration", "composer", "tinker"]
 
+[addons.vue]
+category = "coding"
+type = "instructions"
+file = "addons/coding/vue.md"
+label = "Vue 3"
+magika = []
+keywords = ["vue", "vuejs", "vue3", "composition api", "pinia", "vite.config", "@vitejs", "npm create vite", "nuxt", ".vue"]
+
 # --- sysadmin ---------------------------------------------------------------
 
 [addons.linux-commands]

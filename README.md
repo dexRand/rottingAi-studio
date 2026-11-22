@@ -60,6 +60,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `python` | coding | instructions | 1500 | Magika `python`, keywords (pip, pytest, venv…) |
 | `javascript` | coding | instructions | 623 | keywords (js, ts, typescript, npm, .js, .ts, .tsx…), Magika javascript/typescript |
 | `laravel` | coding | instructions | 570 | keywords (laravel, php, eloquent, blade, artisan…), Magika php |
+| `vue` | coding | instructions | 582 | keywords (vue, vuejs, pinia, vite.config, .vue…) |
 | `linux-commands` | sysadmin | instructions | 1650 | default of `sysadmin`, Magika `shell` |
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
