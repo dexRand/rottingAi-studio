@@ -387,6 +387,8 @@ def main() -> int:
     if args.stealth:                   # no terminal: no approvals, one shot
         args.yes = True
         args.print = True
+    if os.environ.get("AI_AUTO") == "1":   # persistent auto mode (set in .env)
+        args.yes = True
 
     global KEYBOARD, QUIET
     QUIET = args.stealth
