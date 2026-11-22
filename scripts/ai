@@ -148,25 +148,37 @@ router_cmd() {
   cd "$REPO_DIR" && exec "$(router_python)" -m router "$@"
 }
 
+# Print usage and exit if the arg is --help/-h. Runs in the current shell (not
+# a command substitution), so `exit` really stops the script.
+usage_if_help() {
+  case "${1:-}" in
+    --help|-h) usage; exit 0 ;;
+  esac
+}
+
 # no arguments: open the agent chat session in the current directory
 [ $# -eq 0 ] && agent_cmd
 cmd="$1"
 shift
 
 case "$cmd" in
-  chat)
-    "$REPO_DIR/scripts/start.sh" "${1:-$DEFAULT_ROLE}"
-    open_browser
-    ;;
-  start)      "$REPO_DIR/scripts/start.sh" "$@" ;;
-  stop)       "$REPO_DIR/scripts/stop.sh" ;;
-  swap|switch) "$REPO_DIR/scripts/stop.sh" >/dev/null 2>&1 || true
-              # SIGTERM is async: wait until the old llama-server releases the port
-              for _ in $(seq 1 20); do
-                ss -ltn 2>/dev/null | grep -q ":$LLAMA_PORT " || break
-                sleep 0.25
-              done
-              "$REPO_DIR/scripts/start.sh" "${1:-$DEFAULT_ROLE}" ;;
+  chat)   usage_if_help "$1"
+          "$REPO_DIR/scripts/start.sh" "${1:-$DEFAULT_ROLE}"
+          open_browser
+          ;;
+  start)  usage_if_help "$1"
+          "$REPO_DIR/scripts/start.sh" "$@"
+          ;;
+  stop)   "$REPO_DIR/scripts/stop.sh" ;;
+  swap|switch) usage_if_help "$1"
+          role="${1:-$DEFAULT_ROLE}"
+          "$REPO_DIR/scripts/stop.sh" >/dev/null 2>&1 || true
+          # SIGTERM is async: wait until the old llama-server releases the port
+          for _ in $(seq 1 20); do
+            ss -ltn 2>/dev/null | grep -q ":$LLAMA_PORT " || break
+            sleep 0.25
+          done
+          "$REPO_DIR/scripts/start.sh" "$role" ;;
   status)     "$REPO_DIR/scripts/status.sh" ;;
   logs)
     log="$LLAMA_LOG_FILE"
@@ -174,8 +186,8 @@ case "$cmd" in
     [ -f "$log" ] || { echo "no log yet (never started): $log" >&2; exit 1; }
     exec tail -f "$log"
     ;;
-  cli)
-    role="${1:-$DEFAULT_ROLE}"
+  cli)    usage_if_help "$1"
+          role="${1:-$DEFAULT_ROLE}"
     MODEL_VAR="${role^^}_MODEL"; CTX_VAR="${role^^}_CTX"; THREADS_VAR="THREADS_${role^^}"
     MODEL="${!MODEL_VAR:-}"; CTX="${!CTX_VAR:-16384}"; THREADS="${!THREADS_VAR:-${THREADS:-4}}"
     [ -n "$MODEL" ] || { echo "unknown role: $role" >&2; exit 2; }
@@ -206,9 +218,11 @@ case "$cmd" in
     done
     echo "Router venv ready: $REPO_DIR/.venv (restart with ./ai stop && ./ai start)"
     ;;
-  download)   "$REPO_DIR/scripts/download-models.sh" "${@:-$DEFAULT_ROLE}" ;;
+  download)   usage_if_help "$1"
+              "$REPO_DIR/scripts/download-models.sh" "${@:-$DEFAULT_ROLE}" ;;
   setup)      "$REPO_DIR/scripts/setup.sh" "$@" ;;
-  benchmark)  "$REPO_DIR/scripts/benchmark.sh" "${1:-$DEFAULT_ROLE}" "${@:2}" ;;
+  benchmark)  usage_if_help "$1"
+              "$REPO_DIR/scripts/benchmark.sh" "${1:-$DEFAULT_ROLE}" "${@:2}" ;;
   upgrade)    "$REPO_DIR/scripts/upgrade.sh" "${@:-all}" ;;
   healthcheck) "$REPO_DIR/scripts/healthcheck.sh" ;;
   test)       cd "$REPO_DIR" && exec "$(router_python)" "$REPO_DIR/scripts/orchestrate.py" "$@" ;;
