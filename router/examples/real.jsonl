@@ -1,0 +1,8 @@
+{"text": "Analizza questa estensione Chrome: si chiama ChatGPT ma chiede webRequest, cookies e tabs. Cosa fa male? Trova il flag.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Tusk Infostealer: ho l'hash MD5 E5B8B2CF5B244500B22B665C87C11767, identifica il malware.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Ho un dump .raw di una VM e un file target.b64: come è stato esfiltrato il dato?", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Ho questo binario ELF, credo ci sia un buffer overflow, trovami il flag.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Il servizio web ha /login vulnerabile a SQL injection, bypassa l'autenticazione.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "C'è un'immagine PNG con dati nascosti, estrai il flag.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Decifra questo messaggio, sembra RSA con modulo piccolo.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Questa challenge usa un token JWT, rompilo per trovare la flag.", "category": "ctf", "addons": ["ctf-triage"]}
