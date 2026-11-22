@@ -18,7 +18,7 @@ from router.compose import HEADER, Composer, conversation_key  # noqa: E402
 from router.detect import Detection  # noqa: E402
 from router.intent import KeywordClassifier  # noqa: E402
 from router.proxy import make_handler  # noqa: E402
-from router.registry import Registry, Settings  # noqa: E402
+from router.registry import Registry, Settings, estimate_tokens  # noqa: E402
 from router.router import Router  # noqa: E402
 
 
@@ -64,6 +64,17 @@ class RegistryTest(unittest.TestCase):
 
     def test_skill_frontmatter_is_stripped(self):
         self.assertFalse(Registry.load().addons["docker"].text.startswith("---"))
+
+
+class TokenEstimateTest(unittest.TestCase):
+    def test_uses_3_5_chars_per_token(self):
+        self.assertEqual(estimate_tokens("x" * 70), 20)
+
+    def test_uses_conservative_ratio_for_shorter_text(self):
+        self.assertEqual(estimate_tokens("x" * 35), 10)
+
+    def test_floor_is_one_token_for_empty_text(self):
+        self.assertEqual(estimate_tokens(""), 1)
 
 
 class RouterTest(unittest.TestCase):

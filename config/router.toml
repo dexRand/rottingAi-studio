@@ -30,7 +30,7 @@ history_messages = 3
 history_weight = 0.6
 
 # Hard budget for all add-ons injected into ONE conversation (approx tokens,
-# 1 token ~ 4 chars). Add-ons that do not fit are skipped and logged.
+# 1 token ~ 3.5 chars). Add-ons that do not fit are skipped and logged.
 max_addon_tokens = 4000
 
 # Use Magika on attached files and on fenced code blocks in the prompt.
