@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from router.compose import HEADER, Composer, conversation_key  # noqa: E402
+from router.detect import Detection  # noqa: E402
 from router.intent import KeywordClassifier  # noqa: E402
 from router.proxy import make_handler  # noqa: E402
 from router.registry import Registry, Settings  # noqa: E402
@@ -25,6 +26,28 @@ def make_router(**overrides) -> Router:
     reg = Registry.load()
     settings = Settings(backend="keywords", magika=False, **overrides)
     return Router(registry=reg, settings=settings, classifier=KeywordClassifier(reg), detector=None)
+
+
+class _FakeDetector:
+    """Stand-in for Magika: real Magika is an optional dependency."""
+
+    available = True
+
+    def __init__(self, detections):
+        self._detections = detections
+
+    def detect_text(self, text):
+        return []
+
+    def detect_files(self, paths):
+        return self._detections
+
+
+def make_magika_router(detections) -> Router:
+    reg = Registry.load()
+    settings = Settings(backend="keywords")   # magika defaults True
+    return Router(registry=reg, settings=settings,
+                  classifier=KeywordClassifier(reg), detector=_FakeDetector(detections))
 
 
 def user(text: str) -> dict:
@@ -117,6 +140,26 @@ class RouterTest(unittest.TestCase):
     def test_unrelated_prompt_does_not_pick_sql(self):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("sql", [p.addon for p in d.addons])
+
+
+class MagikaRoutingTest(unittest.TestCase):
+    """A binary with no textual hint must still reach ctf-triage."""
+
+    def test_binary_labels_route_to_ctf_triage(self):
+        for label in ("elf", "pebin", "wasm"):
+            with self.subTest(label=label):
+                router = make_magika_router([Detection(label, 0.99, "file:chall")])
+                d = router.route(["analizza questo file"], files=[Path("chall")])
+                self.assertEqual(d.category, "ctf")
+                self.assertIn("ctf-triage", [p.addon for p in d.addons])
+                pick = next(p for p in d.addons if p.addon == "ctf-triage")
+                self.assertTrue(pick.reason.startswith("magika:"))
+
+    def test_image_label_does_not_route(self):
+        router = make_magika_router([Detection("png", 0.99, "file:img.png")])
+        d = router.route(["analizza questo file"], files=[Path("img.png")])
+        self.assertIsNone(d.category)
+        self.assertEqual(d.addons, [])
 
 
 class ComposerTest(unittest.TestCase):
