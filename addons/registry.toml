@@ -129,8 +129,8 @@ type = "instructions"
 file = "addons/shared/http.md"
 label = "HTTP and REST API calls"
 magika = []
-keywords = ["http", "https", "api", "endpoint", "curl", "fetch", "request", "status code",
-            "bearer", "rest", "json", "webhook"]
+keywords = ["http", "https", "api", "endpoint", "curl", "status code", "bearer",
+            "rest", "webhook"]
 
 [addons.regex]
 category = "shared"
