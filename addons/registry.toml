@@ -99,7 +99,7 @@ category = "ctf"
 type = "instructions"
 file = "addons/ctf/triage.md"
 label = "CTF triage"
-magika = []                    # file detection is wired separately
+magika = ["elf", "pebin", "wasm"]  # binary files route here even without a textual hint
 keywords = ["ctf", "capture the flag", "flag", "exploit", "payload", "shellcode",
             "buffer overflow", "pwn", "reverse engineering", "stego", "forensics",
             "malware", "md5", "jwt", "sql injection", "crypto", "cipher", "rsa", "osint",
