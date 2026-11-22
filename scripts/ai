@@ -199,7 +199,7 @@ case "$cmd" in
   test)       cd "$REPO_DIR" && exec "$(router_python)" "$REPO_DIR/scripts/orchestrate.py" "$@" ;;
   agent)      agent_cmd "$@" ;;
   help|--help|-h) usage ;;
-  -*)        agent_cmd "$cmd" "$@" ;;   # agent options: -p, -y, --no-think
+  -*)        agent_cmd "$cmd" "$@" ;;   # agent options: -p, -a, -s, --no-think
   *)
     # anything that is not a command is a prompt for the agent
     agent_cmd "$cmd" "$@"

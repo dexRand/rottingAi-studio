@@ -304,11 +304,13 @@ def ensure_model(url: str) -> bool:
     if healthy():
         return True
     log("info", "modello spento: lo avvio (./ai start)…")
-    if subprocess.run([str(REPO / "ai"), "start"], stdout=subprocess.DEVNULL).returncode != 0:
+    if subprocess.run([str(REPO / "ai"), "start"], stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL).returncode != 0:
         # `base` (the 9B default) is often not downloaded on a 16 GB machine:
         # fall back to `lite` instead of leaving the agent dead on first run.
         log("info", "modello di default (`base`) non avviabile: provo `lite`…")
-        if subprocess.run([str(REPO / "ai"), "start", "lite"], stdout=subprocess.DEVNULL).returncode != 0:
+        if subprocess.run([str(REPO / "ai"), "start", "lite"], stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL).returncode != 0:
             log("error", "avvio fallito: guarda ./ai logs")
             return False
     with Spinner("carico il modello…"):
@@ -451,7 +453,8 @@ def main() -> int:
         try:
             answer = run_turn(args.url, messages, tools, think, headers)
         except KeyboardInterrupt:
-            print(file=sys.stderr)
+            if not QUIET:
+                print(file=sys.stderr)
             log("error", "interrotto")
         except urllib.error.URLError as err:
             log("error", f"modello non raggiungibile su {args.url}: {err}")

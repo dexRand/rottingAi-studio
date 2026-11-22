@@ -104,5 +104,18 @@ class ParserTests(unittest.TestCase):
         self.assertFalse(args.stealth)
 
 
+class QuietTests(unittest.TestCase):
+    def test_log_is_silent_when_quiet(self) -> None:
+        err = io.StringIO()
+        old = agent.QUIET
+        agent.QUIET = True
+        try:
+            with contextlib.redirect_stderr(err):
+                agent.log("info", "deve tacere")
+        finally:
+            agent.QUIET = old
+        self.assertEqual(err.getvalue(), "")
+
+
 if __name__ == "__main__":
     unittest.main()
