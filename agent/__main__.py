@@ -20,6 +20,7 @@ import getpass
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import termios
@@ -65,6 +66,8 @@ HELP = """comandi:
 
 # --- terminal output ------------------------------------------------------------
 TTY = sys.stderr.isatty()
+# stealth mode: no working chatter on the terminal, only the final notification
+QUIET = False
 COLORS = {"router": "36", "think": "2;3", "tool": "33", "output": "90", "stats": "35",
           "letto": "90", "error": "31", "info": "32", "dim": "2", "bold": "1"}
 
@@ -74,6 +77,8 @@ def paint(label: str, text: str) -> str:
 
 
 def log(label: str, text: str) -> None:
+    if QUIET:
+        return
     print(paint(label, f"  {'⎿' if label in ('output', 'letto') else '●'} {text}"), file=sys.stderr, flush=True)
 
 
@@ -99,11 +104,14 @@ class Spinner:
             i += 1
 
     def __enter__(self) -> Spinner:
-        if TTY:
+        if TTY and not QUIET:
             self._thread.start()
         return self
 
     def stop(self) -> None:
+        if QUIET:
+            self._stop.set()
+            return
         if not self._stop.is_set():
             self._stop.set()
             if TTY:
@@ -149,12 +157,14 @@ class Approver:
         self.all = yes
 
     def __call__(self, kind: str, preview: str) -> bool:
-        print(paint("tool", f"  ┌─ {kind}"), file=sys.stderr)
-        for line in preview.rstrip().splitlines():
-            color = "info" if line.startswith("+") else "error" if line.startswith("-") else "0"
-            print(paint("tool", "  │ ") + paint(color, line), file=sys.stderr)
+        if not QUIET:
+            print(paint("tool", f"  ┌─ {kind}"), file=sys.stderr)
+            for line in preview.rstrip().splitlines():
+                color = "info" if line.startswith("+") else "error" if line.startswith("-") else "0"
+                print(paint("tool", "  │ ") + paint(color, line), file=sys.stderr)
         if self.all:
-            print(paint("tool", "  └─ approvato automaticamente"), file=sys.stderr)
+            if not QUIET:
+                print(paint("tool", "  └─ approvato automaticamente"), file=sys.stderr)
             return True
         if KEYBOARD:
             KEYBOARD.unlock()          # fresh, visible input for the answer
@@ -199,23 +209,27 @@ def chat(url: str, messages: list[dict], think: bool, headers: dict) -> dict:
                 if d.get("reasoning_content"):
                     if mode != "think":
                         spin.stop()
-                        print(paint("think", "  ✻ "), end="", file=sys.stderr)
+                        if not QUIET:
+                            print(paint("think", "  ✻ "), end="", file=sys.stderr)
                         mode = "think"
                     reasoning.append(d["reasoning_content"])
-                    print(paint("think", d["reasoning_content"].replace("\n", "\n    ")),
-                          end="", file=sys.stderr, flush=True)
+                    if not QUIET:
+                        print(paint("think", d["reasoning_content"].replace("\n", "\n    ")),
+                              end="", file=sys.stderr, flush=True)
                 if d.get("content"):
                     if mode != "answer":
                         spin.stop()
-                        if mode == "think":
+                        if mode == "think" and not QUIET:
                             print("\n", file=sys.stderr)
                         mode = "answer"
                     content.append(d["content"])
-                    print(d["content"], end="", flush=True)
+                    if not QUIET:
+                        print(d["content"], end="", flush=True)
                 for tc in d.get("tool_calls") or []:
                     spin.stop()
                     if mode in ("think", "answer"):
-                        print(file=sys.stderr if mode == "think" else sys.stdout, flush=True)
+                        if not QUIET:
+                            print(file=sys.stderr if mode == "think" else sys.stdout, flush=True)
                         mode = "tool"
                     acc = calls.setdefault(tc.get("index", 0), {"id": "", "name": "", "arguments": ""})
                     acc["id"] = tc.get("id") or acc["id"]
@@ -223,14 +237,16 @@ def chat(url: str, messages: list[dict], think: bool, headers: dict) -> dict:
                     acc["name"] += fn.get("name") or ""
                     acc["arguments"] += fn.get("arguments") or ""
                     # visible progress while long arguments (a whole file) are generated
-                    if TTY and time.time() - last_progress > 0.25:
+                    if TTY and not QUIET and time.time() - last_progress > 0.25:
                         last_progress = time.time()
                         progress = f"  ✎ {acc['name'] or '...'}… {len(acc['arguments'])} caratteri"
                         print("\r\033[K" + paint("dim", progress), end="", file=sys.stderr, flush=True)
     if mode == "tool" or (calls and TTY):
-        print("\r\033[K", end="", file=sys.stderr, flush=True)
+        if not QUIET:
+            print("\r\033[K", end="", file=sys.stderr, flush=True)
     elif mode:
-        print(file=sys.stderr if mode == "think" else sys.stdout, flush=True)
+        if not QUIET:
+            print(file=sys.stderr if mode == "think" else sys.stdout, flush=True)
     t = timings
     route = f"router: {cat or 'nessuna categoria'}" + (f" +{addons}" if addons else "") if cat is not None else ""
     log("stats", f"{time.time() - t0:.0f}s · prompt {t.get('prompt_n', '?')} tok nuovi, "
@@ -249,13 +265,16 @@ def chat(url: str, messages: list[dict], think: bool, headers: dict) -> dict:
     return msg
 
 
-def run_turn(url: str, messages: list[dict], tools: Toolbox, think: bool, headers: dict) -> None:
-    """Let the model work on the last user message until it stops calling tools."""
+def run_turn(url: str, messages: list[dict], tools: Toolbox, think: bool, headers: dict) -> str | None:
+    """Let the model work on the last user message until it stops calling tools.
+
+    Returns the final assistant answer, or None when MAX_STEPS is reached.
+    """
     for _ in range(MAX_STEPS):
         msg = chat(url, messages, think, headers)
         messages.append(msg)
         if not msg.get("tool_calls"):
-            return
+            return msg.get("content")
         for call in msg["tool_calls"]:
             name = call["function"]["name"]
             try:
@@ -269,6 +288,7 @@ def run_turn(url: str, messages: list[dict], tools: Toolbox, think: bool, header
             jlog("tool", name=name, args=args, result=result[:4000])
             messages.append({"role": "tool", "tool_call_id": call["id"], "content": result})
     log("error", f"fermato dopo {MAX_STEPS} passi senza conclusione")
+    return None
 
 
 # --- session ------------------------------------------------------------------------
@@ -284,11 +304,13 @@ def ensure_model(url: str) -> bool:
     if healthy():
         return True
     log("info", "modello spento: lo avvio (./ai start)…")
-    if subprocess.run([str(REPO / "ai"), "start"], stdout=subprocess.DEVNULL).returncode != 0:
+    if subprocess.run([str(REPO / "ai"), "start"], stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL).returncode != 0:
         # `base` (the 9B default) is often not downloaded on a 16 GB machine:
         # fall back to `lite` instead of leaving the agent dead on first run.
         log("info", "modello di default (`base`) non avviabile: provo `lite`…")
-        if subprocess.run([str(REPO / "ai"), "start", "lite"], stdout=subprocess.DEVNULL).returncode != 0:
+        if subprocess.run([str(REPO / "ai"), "start", "lite"], stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL).returncode != 0:
             log("error", "avvio fallito: guarda ./ai logs")
             return False
     with Spinner("carico il modello…"):
@@ -320,16 +342,48 @@ def new_conversation(cwd: Path) -> list[dict]:
         today=date.today().isoformat(), user=getpass.getuser(), cwd=cwd, home=Path.home())}]
 
 
-def main() -> int:
+def truncate(text: str, limit: int = 2000) -> str:
+    if len(text) <= limit:
+        return text
+    return text[:limit - 1] + "…"
+
+
+def notify(answer: str | None) -> None:
+    """Send the final answer as a desktop notification; print it if that fails."""
+    answer = answer or ""
+    body = truncate(answer if answer.strip() else "ai: nessuna risposta")
+    exe = shutil.which("notify-send")
+    if exe:
+        try:
+            if subprocess.run([exe, "-a", "ai", "ai", body]).returncode == 0:
+                return
+        except (OSError, subprocess.SubprocessError):
+            pass
+    print(body, file=sys.stderr, flush=True)
+
+
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="ai", description="local terminal agent")
     ap.add_argument("prompt", nargs="*", help="first prompt (optional)")
     ap.add_argument("-p", "--print", action="store_true", help="one shot: answer and exit")
     ap.add_argument("-a", "--auto", "-y", "--yes", dest="yes", action="store_true",
                     help="auto mode: run commands and file changes without asking")
+    ap.add_argument("-s", "--stealth", action="store_true",
+                    help="quiet one shot: notify the final answer, no terminal output")
     ap.add_argument("--here", action="store_true", help="(handled by ./ai) stay in this terminal")
     ap.add_argument("--no-think", action="store_true", help="disable the model's reasoning (faster)")
     ap.add_argument("--url", default=os.environ.get("AGENT_URL", "http://127.0.0.1:8080"))
-    args = ap.parse_args()
+    return ap
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    if args.stealth:                   # no terminal: no approvals, one shot
+        args.yes = True
+        args.print = True
+
+    global KEYBOARD, QUIET
+    QUIET = args.stealth
 
     headers = {}
     if os.environ.get("LLAMA_API_KEY"):
@@ -340,18 +394,18 @@ def main() -> int:
     think = not args.no_think
     messages = new_conversation(cwd)
 
-    global KEYBOARD
     KEYBOARD = Keyboard()
     if not ensure_model(args.url):
         return 1
     home = str(Path.home())
     where = str(cwd).replace(home, "~", 1) if str(cwd).startswith(home) else str(cwd)
-    print(paint("bold", "\n ✻ rottingAi") + paint("dim", f"  ·  modello locale  ·  {where}  ·  "
-          f"think {'on' if think else 'off'}  ·  /help"), file=sys.stderr)
-    if args.yes:
-        print(paint("error", "   AUTO MODE: comandi e modifiche ai file vengono eseguiti senza chiedere"),
-              file=sys.stderr)
-    print(file=sys.stderr)
+    if not QUIET:
+        print(paint("bold", "\n ✻ rottingAi") + paint("dim", f"  ·  modello locale  ·  {where}  ·  "
+              f"think {'on' if think else 'off'}  ·  /help"), file=sys.stderr)
+        if args.yes:
+            print(paint("error", "   AUTO MODE: comandi e modifiche ai file vengono eseguiti senza chiedere"),
+                  file=sys.stderr)
+        print(file=sys.stderr)
     jlog("session", cwd=str(cwd), think=think, url=args.url)
     if not args.print:
         setup_readline()
@@ -361,7 +415,8 @@ def main() -> int:
         try:
             if pending:
                 text, pending = pending, ""
-                print(paint("info", "› ") + text, file=sys.stderr)
+                if not QUIET:
+                    print(paint("info", "› ") + text, file=sys.stderr)
             elif args.print:
                 return 0
             else:
@@ -393,16 +448,20 @@ def main() -> int:
         messages.append({"role": "user", "content": text})
         jlog("user", content=text)
         tools.allow_overwrite = bool(REWRITE_RE.search(text))
+        answer = None
         KEYBOARD.lock()
         try:
-            run_turn(args.url, messages, tools, think, headers)
+            answer = run_turn(args.url, messages, tools, think, headers)
         except KeyboardInterrupt:
-            print(file=sys.stderr)
+            if not QUIET:
+                print(file=sys.stderr)
             log("error", "interrotto")
         except urllib.error.URLError as err:
             log("error", f"modello non raggiungibile su {args.url}: {err}")
         finally:
             KEYBOARD.unlock()
+        if args.stealth:
+            notify(answer)
         if args.print:
             return 0
 

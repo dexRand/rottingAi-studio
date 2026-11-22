@@ -7,7 +7,8 @@
 #
 #   ./ai                     chat session with the local agent (current dir)
 #   ./ai "prompt"            same, starting with this prompt (-p = one shot)
-#   ./ai agent [-y] [-p] [--no-think] ["prompt"]
+#   ./ai -s "prompt"         stealth: quiet one shot, final answer as a notification
+#   ./ai agent [-y] [-p] [-s] [--no-think] ["prompt"]
 #   ./ai chat                start model + router (if needed) + open the web UI
 #   ./ai start [role]        start model + router only (role: base | lite | ctf)
 #   ./ai stop                stop everything and free RAM
@@ -37,13 +38,16 @@ Usage: ./ai                 chat with the local agent in a NEW terminal window (
        ./ai "prompt"        same, starting with this prompt
        ./ai -a "prompt"     auto mode: runs commands / edits files WITHOUT asking
        ./ai -p "prompt"     one shot in this terminal: answer and exit
+       ./ai -s "prompt"     stealth: quiet one shot, answer via notify-send (fallback: stderr)
        ./ai --here          chat in this terminal instead of a new window
        ./ai <command> [args]
 
-  agent [-y] [--no-think] ["prompt"]
+  agent [-y] [-p] [-s] [--no-think] ["prompt"]
                      local agent; no prompt = interactive. Every command and
                      file change asks approval (-y = approve all). Shows the
                      model's thinking, tool calls and KV-cache stats.
+                     -s/--stealth: no terminal output, one shot, auto-approve;
+                     sends the final answer with notify-send.
   chat               start model + router (if needed) + open the web UI
   start [role]       start model + router only
   stop               stop everything and free RAM
@@ -116,10 +120,11 @@ spawn_terminal() {
 }
 
 agent_cmd() {
-  # new window unless: one shot (-p), --here, already inside one, or no graphical session
+  # new window unless: one shot (-p), stealth (-s), --here, already inside one,
+  # or no graphical session
   local a here=0
   for a in "$@"; do
-    case "$a" in -p|--print|--here) here=1 ;; esac
+    case "$a" in -p|--print|-s|--stealth|--here) here=1 ;; esac
   done
   if [ "$here" = 0 ] && [ -z "${AI_SPAWNED:-}" ] && [ -t 1 ] \
      && { [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; }; then
@@ -194,7 +199,7 @@ case "$cmd" in
   test)       cd "$REPO_DIR" && exec "$(router_python)" "$REPO_DIR/scripts/orchestrate.py" "$@" ;;
   agent)      agent_cmd "$@" ;;
   help|--help|-h) usage ;;
-  -*)        agent_cmd "$cmd" "$@" ;;   # agent options: -p, -y, --no-think
+  -*)        agent_cmd "$cmd" "$@" ;;   # agent options: -p, -a, -s, --no-think
   *)
     # anything that is not a command is a prompt for the agent
     agent_cmd "$cmd" "$@"
