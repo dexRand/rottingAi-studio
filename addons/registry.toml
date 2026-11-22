@@ -72,6 +72,14 @@ label = "JavaScript / TypeScript"
 magika = ["javascript", "typescript"]
 keywords = ["javascript", "js", "typescript", "ts", "npm", ".js", ".ts", ".tsx"]
 
+[addons.laravel]
+category = "coding"
+type = "instructions"
+file = "addons/coding/laravel.md"
+label = "Laravel (PHP)"
+magika = ["php"]
+keywords = ["laravel", "php", "eloquent", "blade", "artisan", "migration", "composer", "tinker"]
+
 # --- sysadmin ---------------------------------------------------------------
 
 [addons.linux-commands]

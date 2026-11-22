@@ -262,6 +262,30 @@ class JavaScriptAddonTest(unittest.TestCase):
         self.assertNotIn("javascript", [p.addon for p in d.addons])
 
 
+class LaravelAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_laravel_keyword_routes_to_coding(self):
+        d = self.router.route(["scrivi una migration laravel per la tabella utenti"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("laravel", [p.addon for p in d.addons])
+
+    def test_php_eloquent_artisan_prompt_routes_to_laravel(self):
+        d = self.router.route(["un controller php con eloquent e una route"])
+        self.assertIn("laravel", [p.addon for p in d.addons])
+
+    def test_magika_php_routes_to_laravel(self):
+        router = make_magika_router([Detection("php", 0.99, "file:app.php")])
+        d = router.route(["correggi questo file"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("laravel", [p.addon for p in d.addons])
+
+    def test_python_prompt_does_not_pull_laravel(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("laravel", [p.addon for p in d.addons])
+
+
 class MagikaRoutingTest(unittest.TestCase):
     """A binary with no textual hint must still reach ctf-triage."""
 
