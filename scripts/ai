@@ -120,12 +120,18 @@ spawn_terminal() {
 }
 
 agent_cmd() {
-  # new window unless: one shot (-p), stealth (-s), --here, already inside one,
-  # or no graphical session
-  local a here=0
+  # stealth (-s): run detached in the background, notify when done, free the shell
+  local a stealth=0 here=0
   for a in "$@"; do
-    case "$a" in -p|--print|-s|--stealth|--here) here=1 ;; esac
+    case "$a" in -s|--stealth) stealth=1 ;; -p|--print|--here) here=1 ;; esac
   done
+  if [ "$stealth" = 1 ]; then
+    PYTHONPATH="$REPO_DIR${PYTHONPATH:+:$PYTHONPATH}" \
+      AGENT_URL="http://127.0.0.1:$PUBLIC_PORT" \
+      setsid -f python3 -m agent "$@" >/dev/null 2>&1
+    exit 0
+  fi
+  # new window unless: one shot (-p), --here, already inside one, or no graphical session
   if [ "$here" = 0 ] && [ -z "${AI_SPAWNED:-}" ] && [ -t 1 ] \
      && { [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; }; then
     spawn_terminal "$@" && exit 0
