@@ -3,6 +3,7 @@
   python -m router route "testo" [--file F ...] [--history "msg" ...] [--backend B] [--show]
   python -m router serve [--host H] [--port P] [--upstream-port P]
   python -m router eval [dataset.jsonl] [--backend B] [-v]
+  python -m router train <dataset.jsonl...> [--model PATH] [--no-cv]
   python -m router check
 """
 from __future__ import annotations
@@ -78,6 +79,19 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_train(args: argparse.Namespace) -> int:
+    """Fit the tf-idf backend on labeled JSONL and print a short report."""
+    from .tfidf import train
+
+    stats = train(args.datasets, args.model)
+    print(f"trained tf-idf classifier: {stats['examples']} examples -> {stats['model']}")
+    classes = ", ".join(f"{label}={count}" for label, count in stats["classes"].items())
+    print(f"classes: {classes}")
+    if not args.no_cv:
+        print(f"5-fold CV accuracy: {stats['cv_mean']:.3f} (+/- {stats['cv_std']:.3f})")
+    return 0
+
+
 def cmd_check(_: argparse.Namespace) -> int:
     reg = Registry.load()
     settings = Settings.load()
@@ -110,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("text")
     r.add_argument("--file", action="append", default=[], help="attached file (Magika)")
     r.add_argument("--history", action="append", default=[], help="earlier user message (repeatable, oldest first)")
-    r.add_argument("--backend", choices=["auto", "gliclass", "keywords"])
+    r.add_argument("--backend", choices=["auto", "gliclass", "keywords", "tfidf"])
     r.add_argument("--show", action="store_true", help="also print the injected add-on text")
     r.set_defaults(func=cmd_route)
 
@@ -122,12 +136,19 @@ def main(argv: list[str] | None = None) -> int:
 
     e = sub.add_parser("eval", help="measure accuracy on a labelled JSONL dataset")
     e.add_argument("dataset", nargs="?", default=str(Path(__file__).parent / "examples" / "smoke.jsonl"))
-    e.add_argument("--backend", choices=["auto", "gliclass", "keywords"])
+    e.add_argument("--backend", choices=["auto", "gliclass", "keywords", "tfidf"])
     e.add_argument("-v", "--verbose", action="store_true")
     e.set_defaults(func=cmd_eval)
 
     c = sub.add_parser("check", help="validate the registry and add-on sizes")
     c.set_defaults(func=cmd_check)
+
+    t = sub.add_parser("train", help="fit and save the tf-idf classifier (needs scikit-learn)")
+    t.add_argument("datasets", nargs="+", help="labeled JSONL file(s): text -> category")
+    t.add_argument("--model", default="runtime/intent-tfidf.joblib",
+                   help="output joblib path (default runtime/intent-tfidf.joblib)")
+    t.add_argument("--no-cv", action="store_true", help="skip the cross-validation report")
+    t.set_defaults(func=cmd_train)
 
     args = ap.parse_args(argv)
     return args.func(args)

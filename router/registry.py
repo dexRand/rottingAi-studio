@@ -62,6 +62,7 @@ class Category:
 class Settings:
     backend: str = "auto"
     gliclass_model: str = "knowledgator/gliclass-edge-v3.0"
+    tfidf_model: str = "runtime/intent-tfidf.joblib"
     threshold: float = 0.5
     history_messages: int = 3
     history_weight: float = 0.6

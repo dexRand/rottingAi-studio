@@ -1,10 +1,10 @@
 """Intent classifiers: multi-label yes/no scores for categories and add-ons.
 
-Two backends with the same interface:
+Three backends with the same interface:
   - KeywordClassifier: rules from addons/registry.toml, no dependencies.
   - GLiClassClassifier: zero-shot GLiClass (prototype; English-trained).
-The final version (mmBERT-small / SetFit trained on Italian examples) will be a
-third backend with the same `scores()` method.
+  - TfidfClassifier: trained tf-idf + LinearSVC (router/tfidf.py), category only.
+`auto` still means GLiClass -> keywords; `tfidf` is explicit-only.
 """
 from __future__ import annotations
 
@@ -84,7 +84,12 @@ class GLiClassClassifier:
         return result
 
 
-def make_classifier(registry: Registry, backend: str, gliclass_model: str) -> IntentClassifier:
+def make_classifier(
+    registry: Registry,
+    backend: str,
+    gliclass_model: str,
+    tfidf_model: str | None = None,
+) -> IntentClassifier:
     if backend in ("auto", "gliclass"):
         try:
             return GLiClassClassifier(registry, gliclass_model)
@@ -92,6 +97,10 @@ def make_classifier(registry: Registry, backend: str, gliclass_model: str) -> In
             if backend == "gliclass":
                 raise
             log.warning("gliclass unavailable (%s): using the keyword backend", err)
+    elif backend == "tfidf":
+        from .tfidf import DEFAULT_MODEL, TfidfClassifier
+
+        return TfidfClassifier(registry, tfidf_model or DEFAULT_MODEL)
     elif backend != "keywords":
         raise ValueError(f"unknown router backend: {backend}")
     return KeywordClassifier(registry)

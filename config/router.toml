@@ -7,6 +7,8 @@
 # Intent backend:
 #   keywords  -> keyword rules from addons/registry.toml (no dependencies) [default]
 #   gliclass  -> zero-shot GLiClass (experimental, see below)
+#   tfidf     -> trained tf-idf + LinearSVC (experimental; predicts the category
+#                only, NOT add-ons; explicit only, never chosen by auto)
 #   auto      -> gliclass if installed (./ai router-install), else keywords
 #
 # Measured 2026-11-20 on 8 Italian prompts (`./ai route-eval --backend gliclass`):
@@ -17,6 +19,7 @@
 #   (mmBERT-small / SetFit), measured with `./ai route-eval`.
 backend = "keywords"
 gliclass_model = "knowledgator/gliclass-edge-v3.0"
+tfidf_model = "runtime/intent-tfidf.joblib"
 
 # Below this confidence the router makes no guess: no category, no add-ons
 # (the base model answers with its general behaviour).
