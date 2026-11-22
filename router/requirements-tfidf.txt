@@ -1,0 +1,4 @@
+# Trained tf-idf intent backend (category only; NOT the default).
+# Installed by: ./ai router-install --tfidf
+# joblib (used to save/load the model) comes with scikit-learn. CPU-only, no PyTorch.
+scikit-learn>=1.6

@@ -5,3 +5,5 @@
 magika>=1.0
 # Experimental GLiClass backend (pulls PyTorch, ~1 GB): ./ai router-install --gliclass
 #   -> installs router/requirements-gliclass.txt with the CPU-only torch index
+# Trained tf-idf backend (scikit-learn, category only): ./ai router-install --tfidf
+#   -> installs router/requirements-tfidf.txt

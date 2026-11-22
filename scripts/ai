@@ -16,6 +16,7 @@
 #   ./ai cli [role]          terminal chat via llama-cli (no server, no router)
 #   ./ai route "testo" [--file F] [--show]   show what the router would pick
 #   ./ai route-eval [file.jsonl]             router accuracy on labelled examples
+#   ./ai route-train <dataset.jsonl...>      fit + save the tf-idf classifier (needs sklearn)
 #   ./ai router-install      venv with Magika (+ experimental GLiClass)
 #   ./ai download [--all|<role>]
 #   ./ai setup [--all] [--no-router]  one-shot: binaries check + models + router deps
@@ -53,9 +54,13 @@ Usage: ./ai                 chat with the local agent in a NEW terminal window (
                      show the category + add-ons the router would pick
   route-eval [file.jsonl] [--backend B] [-v]
                      router accuracy on labelled examples
+  route-train <dataset.jsonl...>
+                     fit + save the tf-idf classifier (needs sklearn)
   router-check       validate addons/registry.toml and add-on sizes
-  router-install [--gliclass]
+  router-install [--gliclass] [--tfidf]
                      create .venv with Magika (+ experimental GLiClass)
+
+  tfidf backend: ./ai router-install --tfidf, then ./ai route-train <dataset.jsonl...>
   download [--all|<role>]
   setup [--all] [--no-router]
                      one-shot first-run: check llama-server binary, download the
@@ -161,16 +166,24 @@ case "$cmd" in
     ;;
   route)          router_cmd route "$@" ;;
   route-eval)     router_cmd eval "$@" ;;
+  route-train)    router_cmd train "$@" ;;
   router-check)   router_cmd check ;;
   router-install)
     python3 -m venv "$REPO_DIR/.venv"
     "$REPO_DIR/.venv/bin/pip" install --upgrade pip
     "$REPO_DIR/.venv/bin/pip" install -r "$REPO_DIR/router/requirements.txt"
-    if [ "${1:-}" = "--gliclass" ]; then
-      # CPU-only PyTorch wheels: avoids a multi-GB CUDA download
-      "$REPO_DIR/.venv/bin/pip" install --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r "$REPO_DIR/router/requirements-gliclass.txt"
-    fi
+    for flag in "$@"; do
+      case "$flag" in
+        --gliclass)
+          # CPU-only PyTorch wheels: avoids a multi-GB CUDA download
+          "$REPO_DIR/.venv/bin/pip" install --extra-index-url https://download.pytorch.org/whl/cpu \
+            -r "$REPO_DIR/router/requirements-gliclass.txt"
+          ;;
+        --tfidf)
+          "$REPO_DIR/.venv/bin/pip" install -r "$REPO_DIR/router/requirements-tfidf.txt"
+          ;;
+      esac
+    done
     echo "Router venv ready: $REPO_DIR/.venv (restart with ./ai stop && ./ai start)"
     ;;
   download)   "$REPO_DIR/scripts/download-models.sh" "${@:-$DEFAULT_ROLE}" ;;

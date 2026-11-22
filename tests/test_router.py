@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
 import threading
 import unittest
 import urllib.request
@@ -13,6 +14,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+try:
+    import sklearn  # noqa: F401
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
 
 from router.compose import HEADER, Composer, conversation_key  # noqa: E402
 from router.detect import Detection  # noqa: E402
@@ -64,6 +71,62 @@ class RegistryTest(unittest.TestCase):
 
     def test_skill_frontmatter_is_stripped(self):
         self.assertFalse(Registry.load().addons["docker"].text.startswith("---"))
+
+
+class TfidfClassifierTest(unittest.TestCase):
+    """Trained backend: sklearn is optional, so skip when it is not installed."""
+
+    @unittest.skipIf(not SKLEARN_AVAILABLE, "scikit-learn not installed")
+    def test_train_roundtrip_and_predict_category(self):
+        from router.tfidf import TfidfClassifier, train
+
+        rows = [
+            {"text": "scrivi una funzione python che legge un file", "category": "coding"},
+            {"text": "ho un errore nel codice python, questo traceback", "category": "coding"},
+            {"text": "correggi la classe e refactor del codice", "category": "coding"},
+            {"text": "questa funzione python ha un bug", "category": "coding"},
+            {"text": "il servizio nginx non parte, usa systemctl", "category": "sysadmin"},
+            {"text": "comando linux nel terminale per i permessi", "category": "sysadmin"},
+            {"text": "sposta la cartella nella home con mv", "category": "sysadmin"},
+            {"text": "il disco e le partizioni su debian", "category": "sysadmin"},
+            {"text": "trova il flag in questo binario elf", "category": "ctf"},
+            {"text": "questa challenge ha un buffer overflow, exploit", "category": "ctf"},
+            {"text": "estrai il flag dall'immagine con la steganografia", "category": "ctf"},
+            {"text": "reverse engineering del malware per la flag", "category": "ctf"},
+            {"text": "mi consigli un libro da leggere?", "category": None},
+            {"text": "che tempo fa domani a milano?", "category": None},
+            {"text": "scrivi una mail al mio capo per le ferie", "category": None},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            dataset = Path(tmp) / "tiny.jsonl"
+            dataset.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+            model_path = Path(tmp) / "intent.joblib"
+
+            stats = train([dataset], model_path)
+            self.assertEqual(stats["examples"], len(rows))
+            self.assertEqual(stats["classes"]["none"], 3)
+            self.assertTrue(Path(stats["model"]).is_file())
+
+            clf = TfidfClassifier(Registry.load(), model_path)
+            self.assertEqual(clf.name, "tfidf")
+
+            scores = clf.scores("scrivi una funzione python, mi dà un errore nel codice")
+            best = max(scores, key=scores.get)
+            self.assertEqual(best, "cat:coding")
+            for key, value in scores.items():
+                self.assertTrue(key.startswith("cat:"), key)
+                self.assertNotEqual(key, "cat:none")
+                self.assertGreaterEqual(value, 0.0)
+                self.assertLessEqual(value, 1.0)
+            self.assertLessEqual(sum(scores.values()), 1.0001)
+
+    @unittest.skipIf(not SKLEARN_AVAILABLE, "scikit-learn not installed")
+    def test_missing_model_fails_loudly(self):
+        from router.tfidf import TfidfClassifier
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(FileNotFoundError):
+                TfidfClassifier(Registry.load(), Path(tmp) / "missing.joblib")
 
 
 class TokenEstimateTest(unittest.TestCase):

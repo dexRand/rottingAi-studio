@@ -56,7 +56,10 @@ class Router:
         self.registry = registry or Registry.load()
         self.settings = settings or Settings.load()
         self.classifier = classifier or make_classifier(
-            self.registry, self.settings.backend, self.settings.gliclass_model
+            self.registry,
+            self.settings.backend,
+            self.settings.gliclass_model,
+            self.settings.tfidf_model,
         )
         if detector is None and self.settings.magika:
             detector = MagikaDetector()
