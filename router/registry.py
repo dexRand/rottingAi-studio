@@ -15,8 +15,8 @@ SHARED = "shared"
 
 
 def estimate_tokens(text: str) -> int:
-    """Rough token count (~4 chars per token): good enough for budgeting."""
-    return max(1, len(text) // 4)
+    """Rough token count (~3.5 chars per token): good enough for budgeting."""
+    return max(1, len(text) * 2 // 7)
 
 
 def _strip_frontmatter(text: str) -> str:
