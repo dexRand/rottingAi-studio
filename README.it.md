@@ -60,6 +60,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | Add-on | Categoria | Tipo | ~Token | Attivato da |
 |---|---|---|---|---|
 | `python` | coding | istruzioni | 1500 | Magika `python`, parole chiave (pip, pytest, venv…) |
+| `javascript` | coding | istruzioni | 623 | parole chiave (js, ts, typescript, npm, .js, .ts, .tsx…), Magika javascript/typescript |
 | `linux-commands` | sysadmin | istruzioni | 1650 | default di `sysadmin`, Magika `shell` |
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
