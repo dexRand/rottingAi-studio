@@ -128,7 +128,7 @@ agent_cmd() {
   if [ "$stealth" = 1 ]; then
     PYTHONPATH="$REPO_DIR${PYTHONPATH:+:$PYTHONPATH}" \
       AGENT_URL="http://127.0.0.1:$PUBLIC_PORT" \
-      setsid -f python3 -m agent "$@" >/dev/null 2>&1
+      setsid -f python3 -m agent "$@" >/dev/null 2>>"$RUNTIME_DIR/stealth.log"
     exit 0
   fi
   # new window unless: one shot (-p), --here, already inside one, or no graphical session
