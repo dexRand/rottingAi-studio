@@ -117,6 +117,7 @@ cp .env.example .env                # porte / API key se serve
 ./ai chat                avvia modello + router (se serve) + apre la web UI
 ./ai start [ruolo]       avvia solo modello + router (ruolo: base | lite | ctf)
 ./ai stop                ferma tutto e libera la RAM
+./ai swap [ruolo]        ferma il modello attuale e ne avvia un altro (base | lite | ctf)
 ./ai status              stato modello + router + RAM
 ./ai logs [router]       segue il log di llama-server (o del router)
 ./ai cli [ruolo]         chat da terminale via llama-cli (senza server né router)

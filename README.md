@@ -117,6 +117,7 @@ cp .env.example .env                # adjust ports / API key if needed
 ./ai chat                start model + router (if needed) + open the web UI
 ./ai start [role]        start model + router only (role: base | lite | ctf)
 ./ai stop                stop everything and free RAM
+./ai swap [role]         stop current model + start another (base | lite | ctf)
 ./ai status              model + router + RAM status
 ./ai logs [router]       follow the llama-server (or router) log
 ./ai cli [role]          terminal chat via llama-cli (no server, no router)

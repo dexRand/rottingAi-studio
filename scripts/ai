@@ -12,6 +12,7 @@
 #   ./ai chat                start model + router (if needed) + open the web UI
 #   ./ai start [role]        start model + router only (role: base | lite | ctf)
 #   ./ai stop                stop everything and free RAM
+#   ./ai swap [role]         stop current model + start another (role: base | lite | ctf)
 #   ./ai status              model + router + RAM status
 #   ./ai logs [router]       follow the llama-server (or router) log
 #   ./ai cli [role]          terminal chat via llama-cli (no server, no router)
@@ -51,6 +52,7 @@ Usage: ./ai                 chat with the local agent in a NEW terminal window (
   chat               start model + router (if needed) + open the web UI
   start [role]       start model + router only
   stop               stop everything and free RAM
+  swap [role]        stop current model + start another role
   status             model + router + RAM status
   logs [router]      follow the llama-server (or router) log
   cli [role]         terminal chat via llama-cli (no server, no router)
@@ -158,6 +160,13 @@ case "$cmd" in
     ;;
   start)      "$REPO_DIR/scripts/start.sh" "$@" ;;
   stop)       "$REPO_DIR/scripts/stop.sh" ;;
+  swap|switch) "$REPO_DIR/scripts/stop.sh" >/dev/null 2>&1 || true
+              # SIGTERM is async: wait until the old llama-server releases the port
+              for _ in $(seq 1 20); do
+                ss -ltn 2>/dev/null | grep -q ":$LLAMA_PORT " || break
+                sleep 0.25
+              done
+              "$REPO_DIR/scripts/start.sh" "${1:-$DEFAULT_ROLE}" ;;
   status)     "$REPO_DIR/scripts/status.sh" ;;
   logs)
     log="$LLAMA_LOG_FILE"
