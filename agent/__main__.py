@@ -351,11 +351,13 @@ def truncate(text: str, limit: int = 2000) -> str:
 def notify(answer: str | None) -> None:
     """Send the final answer as a desktop notification; print it if that fails."""
     answer = answer or ""
-    body = truncate(answer if answer.strip() else "ai: nessuna risposta")
+    body = truncate(answer if answer.strip() else "nessuna risposta")
+    # Discreet sender: the hostname, not "ai" (override with AI_NOTIFY_APP).
+    app = os.environ.get("AI_NOTIFY_APP") or getattr(os.uname(), "nodename", "nota")
     exe = shutil.which("notify-send")
     if exe:
         try:
-            if subprocess.run([exe, "-a", "ai", "ai", body]).returncode == 0:
+            if subprocess.run([exe, "-a", app, app, body]).returncode == 0:
                 return
         except (OSError, subprocess.SubprocessError):
             pass

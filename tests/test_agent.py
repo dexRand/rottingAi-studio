@@ -54,9 +54,10 @@ class NotifyTests(unittest.TestCase):
             return _Run(0)
 
         with mock.patch.object(agent.shutil, "which", return_value="/usr/bin/notify-send"), \
-             mock.patch.object(agent.subprocess, "run", side_effect=fake_run):
+             mock.patch.object(agent.subprocess, "run", side_effect=fake_run), \
+             mock.patch.dict(agent.os.environ, {"AI_NOTIFY_APP": "nota"}):
             notify("x" * 5000)
-        self.assertEqual(calls[0][:4], ["/usr/bin/notify-send", "-a", "ai", "ai"])
+        self.assertEqual(calls[0][:4], ["/usr/bin/notify-send", "-a", "nota", "nota"])
         self.assertEqual(len(calls[0]), 5)
         self.assertLessEqual(len(calls[0][4]), 2000)
 
@@ -87,8 +88,8 @@ class NotifyTests(unittest.TestCase):
              mock.patch.object(agent.subprocess, "run", side_effect=fake_run):
             notify(None)
             notify("   ")
-        self.assertEqual(calls[0][-1], "ai: nessuna risposta")
-        self.assertEqual(calls[1][-1], "ai: nessuna risposta")
+        self.assertEqual(calls[0][-1], "nessuna risposta")
+        self.assertEqual(calls[1][-1], "nessuna risposta")
 
 
 class ParserTests(unittest.TestCase):
