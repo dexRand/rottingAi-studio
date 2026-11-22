@@ -6,3 +6,7 @@
 {"text": "C'è un'immagine PNG con dati nascosti, estrai il flag.", "category": "ctf", "addons": ["ctf-triage"]}
 {"text": "Decifra questo messaggio, sembra RSA con modulo piccolo.", "category": "ctf", "addons": ["ctf-triage"]}
 {"text": "Questa challenge usa un token JWT, rompilo per trovare la flag.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Sto facendo questa ctf, mi dà questa roba: Misty Morning: Un viaggiatore solitario ha lasciato un messaggio nascosto tra le nebbie delle montagne: solo chi sa guardare oltre l'orizzonte potrà trovarlo... con un png", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Sto facendo questa ctf, mi dà questa roba: Corrupted Memories: Un ricordo digitale danneggiato... i primi frammenti sono corrotti ma l'immagine completa nasconde ancora la verità. png corrotta", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Sto facendo questa ctf, mi dà questa roba: six76seven: git gud, git repo da verificare", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "Sto facendo questa ctf, mi dà questa roba: The Signal: Un gruppo hacker ha intercettato un messaggio criptato dal gruppo alleato... testo cifrato", "category": "ctf", "addons": ["ctf-triage"]}
