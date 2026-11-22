@@ -66,9 +66,7 @@ def build_pipeline():
     from sklearn.svm import LinearSVC
 
     return Pipeline([
-        ("tfidf", TfidfVectorizer(
-            analyzer="char_wb", ngram_range=(2, 4), lowercase=True, sublinear_tf=True
-        )),
+        ("tfidf", TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 4))),
         ("svc", LinearSVC(dual="auto", max_iter=2000)),
     ])
 
