@@ -58,6 +58,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | Add-on | Category | Type | ~Tokens | Triggered by |
 |---|---|---|---|---|
 | `python` | coding | instructions | 1500 | Magika `python`, keywords (pip, pytest, venv…) |
+| `javascript` | coding | instructions | 623 | keywords (node, npm, react, vue, async…), Magika javascript/typescript |
 | `linux-commands` | sysadmin | instructions | 1650 | default of `sysadmin`, Magika `shell` |
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |

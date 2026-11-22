@@ -153,6 +153,32 @@ class RouterTest(unittest.TestCase):
         self.assertNotIn("sql", [p.addon for p in d.addons])
 
 
+class JavaScriptAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_javascript_keyword_routes_to_coding(self):
+        d = self.router.route(["come scrivo una funzione async in javascript?"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("javascript", [p.addon for p in d.addons])
+
+    def test_typescript_keyword_routes_to_javascript(self):
+        d = self.router.route(["devo tipizzare una interfaccia in typescript"])
+        self.assertIn("javascript", [p.addon for p in d.addons])
+
+    def test_magika_labels_route_to_javascript(self):
+        for label in ("javascript", "typescript"):
+            with self.subTest(label=label):
+                router = make_magika_router([Detection(label, 0.99, f"file:app.{label}")])
+                d = router.route(["correggi questo file"])
+                self.assertEqual(d.category, "coding")
+                self.assertIn("javascript", [p.addon for p in d.addons])
+
+    def test_python_prompt_does_not_pull_javascript(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("javascript", [p.addon for p in d.addons])
+
+
 class MagikaRoutingTest(unittest.TestCase):
     """A binary with no textual hint must still reach ctf-triage."""
 

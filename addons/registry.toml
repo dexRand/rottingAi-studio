@@ -64,6 +64,15 @@ magika = ["python"]            # Magika labels that trigger this add-on directly
 keywords = ["python", "pip", "venv", "pytest", "django", "flask", "fastapi", "pandas", "numpy",
             "asyncio", "pyproject", ".py"]
 
+[addons.javascript]
+category = "coding"
+type = "instructions"
+file = "addons/coding/javascript.md"
+label = "JavaScript / TypeScript"
+magika = ["javascript", "typescript"]
+keywords = ["javascript", "js", "typescript", "ts", "node", "npm", "react", "vue",
+            "fetch", "async", ".js", ".ts", ".tsx"]
+
 # --- sysadmin ---------------------------------------------------------------
 
 [addons.linux-commands]
