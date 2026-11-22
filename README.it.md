@@ -121,8 +121,10 @@ cp .env.example .env                # porte / API key se serve
 ./ai cli [ruolo]         chat da terminale via llama-cli (senza server né router)
 ./ai route "testo" [--file F] [--history "msg"] [--show]
 ./ai route-eval [file.jsonl] [--backend B] [-v]
+./ai route-train <dataset.jsonl...>   addestra e salva il classificatore tf-idf (serve sklearn)
 ./ai router-check        valida il registro e le dimensioni degli add-on
-./ai router-install      .venv con Magika (+ GLiClass sperimentale)
+./ai router-install [--gliclass] [--tfidf]
+                         .venv con Magika (+ GLiClass sperimentale / tf-idf)
 ./ai download [--all|<ruolo>]
 ./ai setup [--all] [--no-router]
 ./ai benchmark [ruolo] [thread]
@@ -149,6 +151,7 @@ confermato con `./ai benchmark` sulla CPU di destinazione. I modelli stanno
 |---|---|---|
 | `keywords` | **default** | regole da `addons/registry.toml`, nessuna dipendenza, prevedibile |
 | `gliclass` | sperimentale | zero-shot; misurato **1/8 – 5/8** su prompt italiani, non riconosce mai "altro argomento" |
+| `tfidf` | baseline/sperimentale | sklearn tf-idf + LinearSVC, predice solo la categoria, **NON** default, richiede `./ai router-install --tfidf` + `./ai route-train` |
 | mmBERT-small / SetFit | previsto | addestrato su esempi italiani reali, misurato con `./ai route-eval` |
 
 ## Integrazione OpenCode

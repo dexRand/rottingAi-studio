@@ -119,8 +119,10 @@ cp .env.example .env                # adjust ports / API key if needed
 ./ai cli [role]          terminal chat via llama-cli (no server, no router)
 ./ai route "text" [--file F] [--history "msg"] [--show]
 ./ai route-eval [file.jsonl] [--backend B] [-v]
+./ai route-train <dataset.jsonl...>   fit + save the tf-idf classifier (needs sklearn)
 ./ai router-check        validate the registry and add-on sizes
-./ai router-install      .venv with Magika (+ experimental GLiClass)
+./ai router-install [--gliclass] [--tfidf]
+                         .venv with Magika (+ experimental GLiClass / tf-idf)
 ./ai download [--all|<role>]
 ./ai setup [--all] [--no-router]
 ./ai benchmark [role] [threads]
@@ -147,6 +149,7 @@ repo** (`MODELS_DIR`, default `~/local-ai/models`); see `docs/models.md`.
 |---|---|---|
 | `keywords` | **default** | rules from `addons/registry.toml`, no dependencies, predictable |
 | `gliclass` | experimental | zero-shot; measured **1/8 – 5/8** on Italian prompts, never recognised "other topic" |
+| `tfidf` | baseline/experimental | sklearn tf-idf + LinearSVC, predicts category only, **NOT** default, needs `./ai router-install --tfidf` + `./ai route-train` |
 | mmBERT-small / SetFit | planned | trained on real Italian examples, measured with `./ai route-eval` |
 
 ## OpenCode integration

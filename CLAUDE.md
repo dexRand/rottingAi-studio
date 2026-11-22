@@ -69,6 +69,10 @@ Fatto:
   nel turno utente corrente, prima del prompt intatto, e li reinserisce identici nei turni successivi
   (cache KV valida). Coperto da `tests/test_router.py`.
 - `./ai route-eval` misura l'accuratezza su `router/examples/*.jsonl`.
+- Backend `tfidf` (sklearn, **opzionale**, **non default**): tf-idf char n-gram + LinearSVC in
+  `router/tfidf.py`, predice **solo la categoria** (add-on dai `default_addons` + Magika). Si misura
+  con `./ai route-eval --backend tfidf`; si addestra con `./ai route-train <dataset.jsonl...>`
+  dopo `./ai router-install --tfidf`.
 
 Misurato: GLiClass zero-shot NON funziona in italiano (edge 1/8, base 5/8, modern-base 2/8 su 8 prompt;
 "altro argomento" mai riconosciuto). Default quindi = backend `keywords`; GLiClass resta sperimentale.
@@ -89,6 +93,6 @@ Aggiunto dopo la prova dal vivo (Qwen3.5-9B su Core Ultra 7 255U: prefill ~21 t/
   su un .py restava su coding); aggiunte parole chiave sysadmin per le operazioni sui file.
 
 Da fare:
-- Esempi reali per categoria → classificatore addestrato (mmBERT-small / SetFit) come nuovo backend.
+- Esempi reali per categoria → migliorare il classificatore addestrato (oggi baseline `tfidf`; poi mmBERT-small / SetFit).
 - Tool di ripiego per chiedere un add-on mancante; LoRA solo se misurato necessario.
 - Benchmark di Qwen3.5-9B vs 4B sulla CPU di destinazione; prova end-to-end con il modello vero.

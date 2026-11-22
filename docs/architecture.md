@@ -65,7 +65,7 @@ turni, niente scaricamento, retry identico, nuova conversazione pulita).
 | Registro | `addons/registry.toml`, `router/registry.py` | categorie, add-on, catalogo skill |
 | Impostazioni | `config/router.toml` | backend, soglia, storico, budget token |
 | Magika | `router/detect.py` | opzionale; un solo tipo per input |
-| Intento | `router/intent.py` | `keywords` (default), `gliclass` (sperimentale) |
+| Intento | `router/intent.py` | `keywords` (default), `gliclass` (sperimentale), `tfidf` (sklearn, categoria only) |
 | Decisione | `router/router.py` | categoria + add-on, budget, soglia |
 | Iniezione | `router/compose.py` | stabilità del prefisso, sessioni |
 | Proxy | `router/proxy.py` | streaming SSE, header `X-Router-*`, `/router/status` |
