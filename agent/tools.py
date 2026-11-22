@@ -43,6 +43,14 @@ SPECS = [
         "parameters": {"type": "object", "properties": {
             "path": {"type": "string"}, "old": {"type": "string"}, "new": {"type": "string"}},
             "required": ["path", "old", "new"]}}},
+    {"type": "function", "function": {
+        "name": "web_search",
+        "description": "Search the web and return the top results (title + URL + snippet). Use it "
+                       "only when the user asks for current or live information the model cannot know. "
+                       "Fails with a clear message if there is no internet.",
+        "parameters": {"type": "object", "properties": {
+            "query": {"type": "string", "description": "the search query"}},
+            "required": ["query"]}}},
 ]
 
 
@@ -128,3 +136,26 @@ class Toolbox:
             return "DENIED by the user: the file was not changed."
         p.write_text(updated, encoding="utf-8")
         return f"ok: edited {p}"
+
+    def t_web_search(self, query: str) -> str:
+        try:
+            from ddgs import DDGS
+        except ImportError:
+            try:
+                from duckduckgo_search import DDGS
+            except ImportError:
+                return "error: web search not installed. Install it with: ./.venv/bin/pip install ddgs"
+        try:
+            with DDGS() as d:
+                results = list(d.text(query, max_results=5))
+        except Exception as e:
+            return f"error: web search failed (offline or blocked): {type(e).__name__}: {e}"
+        if not results:
+            return "no results."
+        out = []
+        for i, r in enumerate(results, 1):
+            title = r.get("title") or ""
+            url = r.get("href") or r.get("url") or ""
+            body = (r.get("body") or "").strip()
+            out.append(f"{i}. {title}\n   {url}" + (f"\n   {body}" if body else ""))
+        return "\n".join(out)
