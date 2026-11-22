@@ -63,6 +63,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
 | `ctf-triage` | ctf | instructions | 590 | any CTF request (default) |
 | `docker` | shared | skill | 350 | docker, compose, container… (any category) |
+| `regex` | shared | instructions | 290 | regex, lookahead, lookbehind, capture group… (any category) |
 
 Types, cheapest first: instructions → skill → tool → LoRA (only if measured
 necessary). Budget: `max_addon_tokens` (4000) per conversation. Add one by

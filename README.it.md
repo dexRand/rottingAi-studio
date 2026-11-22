@@ -65,6 +65,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
 | `ctf-triage` | ctf | istruzioni | 590 | qualsiasi richiesta CTF (default) |
 | `docker` | condiviso | skill | 350 | docker, compose, container… (qualsiasi categoria) |
+| `regex` | condiviso | istruzioni | 290 | regex, lookahead, lookbehind, gruppo di cattura… (qualsiasi categoria) |
 
 Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
 necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne

@@ -94,6 +94,14 @@ class RouterTest(unittest.TestCase):
         self.assertEqual(d.addons, [])
         self.assertIn("linux-commands", d.skipped)
 
+    def test_regex_prompt_routes_to_regex(self):
+        d = self.router.route(["come scrivo una regex con lookahead per estrarre l'anno?"])
+        self.assertIn("regex", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_regex(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("regex", [p.addon for p in d.addons])
+
 
 class ComposerTest(unittest.TestCase):
     def setUp(self):

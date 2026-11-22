@@ -21,3 +21,4 @@
 {"text": "C'è un'immagine PNG con dati nascosti, estrai il flag.", "category": "ctf", "addons": ["ctf-triage"]}
 {"text": "Decifra questo messaggio, sembra RSA con modulo piccolo.", "category": "ctf", "addons": ["ctf-triage"]}
 {"text": "Questa challenge usa un token JWT, rompilo per trovare la flag.", "category": "ctf", "addons": ["ctf-triage"]}
+{"text": "come scrivo una regex con lookahead per estrarre l'anno da una data?", "category": null, "addons": ["regex"]}

@@ -115,6 +115,15 @@ label = "Docker containers and Compose"
 magika = ["dockerfile"]
 keywords = ["docker", "dockerfile", "compose", "immagine docker", "podman"]
 
+[addons.regex]
+category = "shared"
+type = "instructions"
+file = "addons/shared/regex.md"
+label = "Regular expressions"
+magika = []
+keywords = ["regex", "regexp", "regular expression", "lookahead", "lookbehind",
+            "capture group", "backreference"]
+
 # --- skill catalog ----------------------------------------------------------
 # OpenCode-only skills grouped by category. They are too large to inject
 # (2.5k–10k tokens each on a 16K context), so the router does NOT append them:
