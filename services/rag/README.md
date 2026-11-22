@@ -35,8 +35,8 @@ Contratto del tool:
 | effetti | **sola lettura**: nessuna scrittura, nessun comando |
 
 Va registrato come gli altri tool in `agent/tools.py` (`SPECS`, schema JSON) e passa dal
-template di tool-calling (`config/llama.cpp/qwen3.5-kv-stable.jinja`); nessun contesto
-sempre attivo.
+template di tool-calling del ruolo (`config/llama.cpp/qwen3.5-kv-stable.jinja` per `base`;
+`lite` usa il template del GGUF); nessun contesto sempre attivo.
 
 ## Non in v1
 
