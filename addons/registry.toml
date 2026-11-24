@@ -94,7 +94,8 @@ type = "instructions"
 file = "addons/coding/c.md"
 label = "C / C++"
 magika = ["c", "cpp"]
-keywords = ["c++", "cpp", "gcc", "clang", "makefile", "pointer", "segfault", "gdb", "valgrind", ".c", ".h", ".cpp"]
+keywords = ["c++", "cpp", "gcc", "clang", "makefile", "pointer", "segfault", "gdb", "valgrind",
+            ".c", ".h", ".cpp", "programma c", "linguaggio c", "codice c", "scritto in c", "in c"]
 
 # --- sysadmin ---------------------------------------------------------------
 

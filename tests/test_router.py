@@ -400,6 +400,12 @@ class CAddonTest(unittest.TestCase):
         d = self.router.route(["compila con gcc e correggi il segfault"])
         self.assertIn("c", [p.addon for p in d.addons])
 
+    def test_standalone_c_language_name_routes_to_c(self):
+        for text in ["scrivi un programma C che legge un file", "scritto in C", "in C"]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("c", [p.addon for p in d.addons])
+
     def test_dot_c_extension_routes_to_c(self):
         d = self.router.route(["correggi il file main.c"])
         self.assertIn("c", [p.addon for p in d.addons])
