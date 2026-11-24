@@ -1,7 +1,7 @@
 # services/rag — knowledge base locale (SPEC)
 
 Knowledge base locale per la documentazione Arch / CachyOS / Proxmox / Docker / Linux,
-interrogabile dal modello base tramite un tool. **Non implementato in questa fase.**
+interrogabile dal modello base tramite un tool. **Implementato in v1 (solo BM25/lessicale).**
 
 ## Decisione
 
@@ -55,4 +55,4 @@ template di tool-calling del ruolo (`config/llama.cpp/qwen3.5-kv-stable.jinja` p
 3. Il modello usa `kb_search` e risponde citando il file di origine, con contenuto
    corrispondente al documento.
 
-**Stato:** SPEC, non implementato in questa fase.
+**Stato:** implementato (v1, solo BM25/lessicale).

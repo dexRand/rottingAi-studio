@@ -135,6 +135,7 @@ cp .env.example .env                # adjust ports / API key if needed
                          .venv with Magika (+ experimental GLiClass / tf-idf)
 ./ai download [--all|<role>]
 ./ai setup [--all] [--no-router]
+./ai rag-index           rebuild the local knowledge base (services/rag/docs/)
 ./ai benchmark [role] [threads]
 ./ai upgrade [all|runtime|skills|check]
 ./ai healthcheck         integrity + health

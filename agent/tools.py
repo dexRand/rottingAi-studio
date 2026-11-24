@@ -60,6 +60,16 @@ SPECS = [
         "parameters": {"type": "object", "properties": {
             "path": {"type": "string", "description": "path to the document file"}},
             "required": ["path"]}}},
+    {"type": "function", "function": {
+        "name": "kb_search",
+        "description": "Search the LOCAL knowledge base (documents the user indexed into "
+                       "services/rag/docs/). Returns the top fragments with their source file. "
+                       "Read-only. Use it when the user asks about documentation you may not "
+                       "have memorised.",
+        "parameters": {"type": "object", "properties": {
+            "query": {"type": "string", "description": "the search query"},
+            "k": {"type": "integer", "description": "number of fragments, 1-10", "default": 5}},
+            "required": ["query"]}}},
 ]
 
 
@@ -168,6 +178,20 @@ class Toolbox:
             body = (r.get("body") or "").strip()
             out.append(f"{i}. {title}\n   {url}" + (f"\n   {body}" if body else ""))
         return "\n".join(out)
+
+    def t_kb_search(self, query: str, k: int = 5) -> str:
+        try:
+            k = int(k)
+        except (TypeError, ValueError):
+            k = 5
+        k = max(1, min(10, k))
+        from services.rag.kb import search
+        hits = search(query, k=k)
+        if not hits:
+            return ("no results in the knowledge base. Drop .md/.txt files into "
+                    "services/rag/docs/ and run ./ai rag-index.")
+        out = [f"{i}. {h['file']} — {h['title']}\n{h['body']}" for i, h in enumerate(hits, 1)]
+        return _clip("\n\n".join(out))
 
     def t_parse_document(self, path: str) -> str:
         p = self._path(path)
