@@ -24,7 +24,7 @@ plus `permissions`, `env`, `concurrency`.
 `${{ matrix.python }}`. `fail-fast: false` keeps other jobs running.
 
 ## Concurrency and cache
-`concurrency: { group: ${{ github.ref }}, cancel-in-progress: true }` cancels
+`concurrency: { group: "${{ github.ref }}", cancel-in-progress: true }` cancels
 superseded runs. `actions/cache` avoids re-downloading dependencies; key on the
 lockfile hash.
 

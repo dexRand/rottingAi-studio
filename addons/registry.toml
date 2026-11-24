@@ -238,7 +238,7 @@ type = "instructions"
 file = "addons/shared/github-actions.md"
 label = "GitHub Actions / CI"
 magika = []
-keywords = ["github actions", "github workflow", "ci/cd", "workflow", ".github/workflows", "actions/checkout", "pipeline"]
+keywords = ["github actions", "github workflow", "ci/cd", ".github/workflows", "actions/checkout"]
 
 # --- skill catalog ----------------------------------------------------------
 # OpenCode-only skills grouped by category. They are too large to inject

@@ -488,12 +488,17 @@ class GitHubActionsAddonTest(unittest.TestCase):
             "setup ci/cd per il progetto",
             "dove metto il file .github/workflows/deploy.yml?",
             "come uso actions/checkout in un job?",
-            "la pipeline fallisce sul runner",
         ]
         for text in prompts:
             with self.subTest(text=text):
                 d = self.router.route([text])
                 self.assertIn("github-actions", [p.addon for p in d.addons])
+
+    def test_generic_pipeline_or_workflow_words_do_not_pull_github_actions(self):
+        for text in ["data pipeline etl con airflow", "come organizzo il workflow del mio team"]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertNotIn("github-actions", [p.addon for p in d.addons])
 
     def test_python_hash_prompt_does_not_pull_github_actions(self):
         d = self.router.route(["come faccio l'hash in python"])

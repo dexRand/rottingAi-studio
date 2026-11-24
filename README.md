@@ -76,7 +76,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `translate` | shared | instructions | 309 | traduci, translate, in inglese, in italiano, into english… (any category) |
 | `humanize` | shared | instructions | 331 | humanize, umanizza, più umano, più naturale, meno robotico… (any category) |
 | `bash-scripting` | shared | instructions | 308 | bash script, shell script, scrivi uno script, shebang, shellcheck, set -euo pipefail… (any category) |
-| `github-actions` | shared | instructions | 406 | github actions, workflow, ci/cd, .github/workflows, actions/checkout, pipeline… (any category) |
+| `github-actions` | shared | instructions | 406 | github actions, github workflow, ci/cd, .github/workflows, actions/checkout… (any category) |
 
 Types, cheapest first: instructions → skill → tool → LoRA (only if measured
 necessary). Budget: `max_addon_tokens` (4000) per conversation. Add one by
