@@ -88,6 +88,14 @@ label = "Vue 3"
 magika = []
 keywords = ["vue", "vuejs", "vue3", "composition api", "pinia", "vite.config", "@vitejs", "npm create vite", "nuxt", ".vue"]
 
+[addons.c]
+category = "coding"
+type = "instructions"
+file = "addons/coding/c.md"
+label = "C / C++"
+magika = ["c", "cpp"]
+keywords = ["c++", "cpp", "gcc", "clang", "makefile", "pointer", "segfault", "gdb", "valgrind", ".c", ".h", ".cpp"]
+
 # --- sysadmin ---------------------------------------------------------------
 
 [addons.linux-commands]
