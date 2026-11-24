@@ -487,6 +487,7 @@ class SystemdUnitsAddonTest(unittest.TestCase):
         for text in [
             "spiega un systemd unit",
             "come scrivo un unit file",
+            "devo scrivere unit files per il servizio",
             "crea un .timer per il backup",
             "cosa metto in ExecStart",
             "quando serve daemon-reload",

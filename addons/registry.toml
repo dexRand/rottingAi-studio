@@ -142,7 +142,7 @@ type = "instructions"
 file = "addons/sysadmin/systemd-units.md"
 label = "systemd unit files"
 magika = []
-keywords = ["systemd unit", "unit file", ".service", ".timer", "ExecStart", "daemon-reload"]
+keywords = ["systemd unit", "unit file", "unit files", ".service", ".timer", "ExecStart", "daemon-reload"]
 
 # --- ctf --------------------------------------------------------------------
 
