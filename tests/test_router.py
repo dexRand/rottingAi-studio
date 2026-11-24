@@ -182,6 +182,15 @@ class RouterTest(unittest.TestCase):
         self.assertIsNone(d.category)
         self.assertEqual(d.addons, [])
 
+    def test_flag_sha256_md5_still_route_to_ctf(self):
+        # do not touch: deferred to the trained classifier (#25)
+        for text in ["trova il flag in questo binario",
+                     "calcola lo sha256 di questo file",
+                     "l'hash md5 del file"]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertEqual(d.category, "ctf")
+
     def test_already_loaded_addons_are_not_repeated(self):
         d = self.router.route(["systemctl restart nginx non va"], loaded={"linux-commands"})
         self.assertNotIn("linux-commands", [p.addon for p in d.addons])
@@ -336,6 +345,18 @@ class JavaScriptAddonTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("javascript", [p.addon for p in d.addons])
 
+    def test_react_usestate_prompt_routes_to_javascript(self):
+        d = self.router.route(["scrivi un componente react con useState"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("javascript", [p.addon for p in d.addons])
+
+    def test_reactjs_and_usestate_keywords_route_to_javascript(self):
+        for text in ["un hook reactjs per lo stato",
+                     "usa useState per lo stato del componente"]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("javascript", [p.addon for p in d.addons])
+
 
 class VueAddonTest(unittest.TestCase):
     def setUp(self):
@@ -451,6 +472,25 @@ class AnsibleAddonTest(unittest.TestCase):
     def test_python_hash_prompt_does_not_pull_ansible(self):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("ansible", [p.addon for p in d.addons])
+
+
+class LinuxCommandsAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_vpn_wireguard_prompt_routes_to_sysadmin(self):
+        d = self.router.route(["configura una vpn con wireguard"])
+        self.assertEqual(d.category, "sysadmin")
+        self.assertIn("linux-commands", [p.addon for p in d.addons])
+
+    def test_deploy_prompt_routes_to_linux_commands(self):
+        d = self.router.route(["fai il deploy del sito"])
+        self.assertEqual(d.category, "sysadmin")
+        self.assertIn("linux-commands", [p.addon for p in d.addons])
+
+    def test_openvpn_prompt_routes_to_linux_commands(self):
+        d = self.router.route(["openvpn non parte dopo il riavvio"])
+        self.assertIn("linux-commands", [p.addon for p in d.addons])
 
 
 class MagikaRoutingTest(unittest.TestCase):
