@@ -258,6 +258,25 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("translate", [p.addon for p in d.addons])
 
+    def test_humanize_prompt_routes_to_humanize(self):
+        prompts = [
+            "umanizza questo testo",
+            "umanizzare questo paragrafo",
+            "rendi più umano questo testo",
+            "scrivi in modo più naturale",
+            "rendilo meno robotico",
+            "humanize this text",
+            "can you humanise this paragraph?",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("humanize", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_humanize(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("humanize", [p.addon for p in d.addons])
+
 
 class JavaScriptAddonTest(unittest.TestCase):
     def setUp(self):
