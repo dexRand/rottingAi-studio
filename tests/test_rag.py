@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -40,6 +42,19 @@ class ReindexTests(unittest.TestCase):
             self.assertTrue(hits)
             self.assertTrue(hits[0]["file"].endswith("alpha.md"))
 
+    def test_heading_only_document_stays_searchable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            docs = Path(tmp) / "docs"
+            docs.mkdir()
+            db = Path(tmp) / "kb.sqlite3"
+            _write(docs / "zabbix.md", "# Zabbix\n")
+
+            kb.reindex(docs, db)
+
+            hits = kb.search("Zabbix", db_path=db)
+            self.assertTrue(hits)
+            self.assertTrue(hits[0]["file"].endswith("zabbix.md"))
+
 
 class SearchTests(unittest.TestCase):
     def test_orders_by_relevance_and_respects_k(self) -> None:
@@ -70,6 +85,27 @@ class EdgeCaseTests(unittest.TestCase):
             self.assertTrue(db.is_file())
             self.assertEqual(kb.search("anything", db_path=Path(tmp) / "absent.sqlite3"), [])
 
+    def test_empty_dir_reindex_drops_stale_table(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            docs = Path(tmp) / "docs"
+            docs.mkdir()
+            source = Path(tmp) / "source"
+            source.mkdir()
+            db = Path(tmp) / "kb.sqlite3"
+            _write(source / "gone.md", "# Gone\n\nzebrafish lives here.\n")
+
+            kb.reindex(source, db)
+            self.assertTrue(kb.search("zebrafish", db_path=db))
+
+            out = io.StringIO()
+            with mock.patch.object(kb, "DOCS_DIR", docs), \
+                 mock.patch.object(kb, "DB_PATH", db), \
+                 contextlib.redirect_stdout(out):
+                self.assertEqual(kb.main(["reindex"]), 0)
+
+            self.assertEqual(kb.search("zebrafish", db_path=db), [])
+            self.assertIn("no .md/.txt files in", out.getvalue())
+
     def test_reindex_refreshes_removed_documents(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             docs = Path(tmp) / "docs"
@@ -97,6 +133,10 @@ class EdgeCaseTests(unittest.TestCase):
             _write(docs / "arch.md",
                    "# Pacman\n\npacman -Syu updates. C:\\temp is a path.\n")
             kb.reindex(docs, db)
+
+            hits = kb.search("pacman -Syu", db_path=db)
+            self.assertTrue(hits)
+            self.assertTrue(hits[0]["file"].endswith("arch.md"))
 
             for query in ("pacman -Syu", "C:\\temp", "a:b OR (c)"):
                 self.assertIsInstance(kb.search(query, db_path=db), list)

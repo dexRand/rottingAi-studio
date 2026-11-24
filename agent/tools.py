@@ -68,7 +68,8 @@ SPECS = [
                        "have memorised.",
         "parameters": {"type": "object", "properties": {
             "query": {"type": "string", "description": "the search query"},
-            "k": {"type": "integer", "description": "number of fragments, 1-10", "default": 5}},
+            "k": {"type": "integer", "description": "number of fragments, 1-10",
+                  "default": 5, "minimum": 1, "maximum": 10}},
             "required": ["query"]}}},
 ]
 

@@ -151,7 +151,8 @@ def reindex(docs_dir: Path = DOCS_DIR, db_path: Path = DB_PATH) -> int:
         else:
             sections = [(path.name, text)]
         for title, body in sections:
-            for chunk in _chunk_text(body):
+            # a heading with an empty body must stay searchable: index its title
+            for chunk in _chunk_text(body) or [title]:
                 rows.append((rel, title, chunk))
 
     db_path = Path(db_path)
@@ -204,11 +205,11 @@ def main(argv: list[str] | None = None) -> int:
     if command != "reindex":
         print("usage: python3 -m services.rag.kb reindex", file=sys.stderr)
         return 2
+    chunks = reindex(DOCS_DIR, DB_PATH)
     sources = _source_files(DOCS_DIR)
     if not sources:
         print(f"no .md/.txt files in {DOCS_DIR}")
         return 0
-    chunks = reindex()
     files = 0
     for path in sources:
         try:
