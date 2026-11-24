@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import difflib
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -51,6 +52,14 @@ SPECS = [
         "parameters": {"type": "object", "properties": {
             "query": {"type": "string", "description": "the search query"}},
             "required": ["query"]}}},
+    {"type": "function", "function": {
+        "name": "parse_document",
+        "description": "Parse a document (PDF, DOCX, XLSX, image) into Markdown using a local OCR "
+                       "(LiteParse + OCRia-nano). Reconstructs tables. Use it when the user asks to "
+                       "read a document, invoice, report or scan. Fully local, no network.",
+        "parameters": {"type": "object", "properties": {
+            "path": {"type": "string", "description": "path to the document file"}},
+            "required": ["path"]}}},
 ]
 
 
@@ -159,3 +168,21 @@ class Toolbox:
             body = (r.get("body") or "").strip()
             out.append(f"{i}. {title}\n   {url}" + (f"\n   {body}" if body else ""))
         return "\n".join(out)
+
+    def t_parse_document(self, path: str) -> str:
+        p = self._path(path)
+        if not p.is_file():
+            return f"error: file not found: {p}"
+        # The agent runs on the venv python, so `lit` is its sibling (NOT the
+        # LLVM `lit` on PATH, which is a different tool).
+        lit = Path(sys.executable).with_name("lit")
+        try:
+            r = subprocess.run([str(lit), "parse", str(p), "--format", "markdown"],
+                               capture_output=True, text=True, timeout=600)
+        except FileNotFoundError:
+            return "error: liteparse not installed (pip install liteparse && lit models pull ocria-nano)"
+        except subprocess.TimeoutExpired:
+            return "error: parse timed out"
+        if r.returncode != 0:
+            return f"error: parse failed: {(r.stderr or '').strip()[:400]}"
+        return (r.stdout or "").strip()[:12000]

@@ -22,6 +22,7 @@
 #   ./ai router-install      venv with Magika (+ experimental GLiClass)
 #   ./ai download [--all|<role>]
 #   ./ai setup [--all] [--no-router]  one-shot: binaries check + models + router deps
+#   ./ai parse <file|folder>  parse documents to markdown (local OCR) → services/rag/docs/
 #   ./ai benchmark [role] [threads]
 #   ./ai upgrade [all|runtime|skills|check]
 #   ./ai healthcheck         integrity + health
@@ -71,6 +72,9 @@ Usage: ./ai                 chat with the local agent in a NEW terminal window (
   setup [--all] [--no-router]
                      one-shot first-run: check llama-server binary, download the
                      default model (+ lite/ctf with --all), install router deps
+  parse <file|folder> [--out DIR]
+                     parse documents to markdown (local OCR, LiteParse + OCRia-nano),
+                     output into services/rag/docs/
   benchmark [role] [threads]
   upgrade [all|runtime|skills|check]
   healthcheck        integrity + health
@@ -221,6 +225,7 @@ case "$cmd" in
   download)   usage_if_help "$1" "usage: ./ai download [--all | base | lite | ctf]"
               "$REPO_DIR/scripts/download-models.sh" "${@:-$DEFAULT_ROLE}" ;;
   setup)      "$REPO_DIR/scripts/setup.sh" "$@" ;;
+  parse)      "$REPO_DIR/scripts/parse-docs.sh" "$@" ;;
   benchmark)  usage_if_help "$1" "usage: ./ai benchmark [base | lite | ctf] [threads]"
               "$REPO_DIR/scripts/benchmark.sh" "${1:-$DEFAULT_ROLE}" "${@:2}" ;;
   upgrade)    "$REPO_DIR/scripts/upgrade.sh" "${@:-all}" ;;
