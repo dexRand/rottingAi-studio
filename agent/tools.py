@@ -211,6 +211,7 @@ class Toolbox:
         try:
             with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
                 charset = resp.headers.get_content_charset() or "utf-8"
+                content_type = resp.headers.get_content_type()
                 raw = resp.read()
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, socket.timeout,
                 ValueError, OSError) as err:
@@ -219,7 +220,8 @@ class Toolbox:
             text = raw.decode(charset, "replace")
         except LookupError:                # unknown charset advertised by the server
             text = raw.decode("utf-8", "replace")
-        text = _html_to_text(text)
+        if "html" in content_type or not content_type:
+            text = _html_to_text(text)
         self.log("letto", f"{url} ({len(text)} chars)")
         return _clip(text, FETCH_MAX) or "(no readable text)"
 

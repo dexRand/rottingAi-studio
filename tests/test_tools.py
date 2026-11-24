@@ -34,10 +34,15 @@ BIG = "<html><body><p>" + ("word " * 3000) + "</p></body></html>"
 
 class _Page(BaseHTTPRequestHandler):
     def do_GET(self):
-        body = BIG if self.path == "/big" else PAGE
+        if self.path == "/big":
+            body, ctype = BIG, "text/html; charset=utf-8"
+        elif self.path == "/json":
+            body, ctype = '{"x": "<b>bold</b>"}', "application/json"
+        else:
+            body, ctype = PAGE, "text/html; charset=utf-8"
         data = body.encode("utf-8")
         self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -85,6 +90,10 @@ class FetchUrlTests(unittest.TestCase):
         result = _tools().t_fetch_url(f"http://127.0.0.1:{port}/")
         self.assertTrue(result.startswith("error: fetch failed"), result)
         self.assertNotIn("Traceback", result)
+
+    def test_non_html_response_is_not_tag_stripped(self):
+        out = _tools().t_fetch_url(f"{self.base}/json")
+        self.assertIn('{"x": "<b>bold</b>"}', out)
 
     def test_non_http_scheme_is_refused_without_reading(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as fh:
