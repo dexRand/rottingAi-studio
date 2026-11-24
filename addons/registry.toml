@@ -136,6 +136,14 @@ magika = []
 keywords = ["ansible", "playbook", "ansible-playbook", "ansible-galaxy", "inventory",
             "role ansible", "become", "idempotent", "idempotency", "idempotenza"]
 
+[addons.terraform]
+category = "sysadmin"
+type = "instructions"
+file = "addons/sysadmin/terraform.md"
+label = "Terraform / OpenTofu (IaC)"
+magika = []
+keywords = ["terraform", "opentofu", "hcl", ".tf", "terraform plan", "provider aws"]
+
 # --- ctf --------------------------------------------------------------------
 
 [addons.ctf-triage]
