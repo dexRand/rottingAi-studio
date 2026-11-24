@@ -474,6 +474,31 @@ class AnsibleAddonTest(unittest.TestCase):
         self.assertNotIn("ansible", [p.addon for p in d.addons])
 
 
+class TerraformAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_terraform_s3_config_routes_to_sysadmin(self):
+        d = self.router.route(["scrivi una configurazione terraform per un bucket s3"])
+        self.assertEqual(d.category, "sysadmin")
+        self.assertIn("terraform", [p.addon for p in d.addons])
+
+    def test_opentofu_hcl_tf_and_plan_prompts_route_to_terraform(self):
+        for text in [
+            "genera una configurazione opentofu per una vm",
+            "correggi questo hcl",
+            "manca il provider nel file main.tf",
+            "spiega l'output di terraform plan",
+        ]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("terraform", [p.addon for p in d.addons])
+
+    def test_python_hash_prompt_does_not_pull_terraform(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("terraform", [p.addon for p in d.addons])
+
+
 class LinuxCommandsAddonTest(unittest.TestCase):
     def setUp(self):
         self.router = make_router()

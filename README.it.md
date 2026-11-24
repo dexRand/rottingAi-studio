@@ -66,6 +66,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
 | `ansible` | sysadmin | istruzioni | 520 | ansible, playbook, ansible-playbook, ansible-galaxy, inventory, role ansible, become, idempotent… |
+| `terraform` | sysadmin | istruzioni | 424 | terraform, opentofu, hcl, .tf, provider aws… |
 | `ctf-triage` | ctf | istruzioni | 590 | qualsiasi richiesta CTF (default), Magika elf/pebin/wasm |
 | `docker` | condiviso | skill | 350 | docker, compose, container… (qualsiasi categoria) |
 | `regex` | condiviso | istruzioni | 290 | regex, lookahead, lookbehind, gruppo di cattura… (qualsiasi categoria) |
