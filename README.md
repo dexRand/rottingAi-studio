@@ -70,6 +70,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `git` | shared | instructions | 380 | rebase, branch, commit, stash, pull request… (any category) |
 | `sql` | shared | instructions | 370 | query, JOIN, GROUP BY, postgres, sqlite… (any category) |
 | `http` | shared | instructions | 352 | http, api, endpoint, curl, fetch, request, bearer, webhook… (any category) |
+| `summarize` | shared | instructions | 310 | riassumi, summar, sintesi, tldr, bullet, punti chiave… (any category) |
 
 Types, cheapest first: instructions → skill → tool → LoRA (only if measured
 necessary). Budget: `max_addon_tokens` (4000) per conversation. Add one by

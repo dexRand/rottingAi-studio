@@ -177,6 +177,17 @@ magika = []
 keywords = ["query", "join", "group by", "insert into", "postgres",
             "postgresql", "mysql", "sqlite", "psql", "database"]
 
+[addons.summarize]
+category = "shared"
+type = "instructions"
+file = "addons/shared/summarize.md"
+label = "Summarization"
+magika = []
+# explicit English forms: \b matching means "summar" alone only hits the bare
+# word, not "summarize" / "summary" / "summarise".
+keywords = ["riassumi", "riassunto", "riassumere", "summar", "summarize", "summarise", "summary",
+            "sintesi", "sintetizza", "sintetizzare", "tldr", "tl;dr", "punti chiave", "bullet"]
+
 # --- skill catalog ----------------------------------------------------------
 # OpenCode-only skills grouped by category. They are too large to inject
 # (2.5k–10k tokens each on a 16K context), so the router does NOT append them:

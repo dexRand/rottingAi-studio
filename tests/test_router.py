@@ -225,6 +225,23 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("http", [p.addon for p in d.addons])
 
+    def test_summarize_prompt_routes_to_summarize(self):
+        prompts = [
+            "riassumi questo articolo in tre punti",
+            "dammi una sintesi del documento",
+            "fammi un tldr",
+            "elenca i punti chiave del testo",
+            "summarize this article for me",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("summarize", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_summarize(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("summarize", [p.addon for p in d.addons])
+
 
 class JavaScriptAddonTest(unittest.TestCase):
     def setUp(self):
