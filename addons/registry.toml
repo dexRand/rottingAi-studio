@@ -136,6 +136,14 @@ magika = []
 keywords = ["ansible", "playbook", "ansible-playbook", "ansible-galaxy", "inventory",
             "role ansible", "become", "idempotent", "idempotency", "idempotenza"]
 
+[addons.systemd-units]
+category = "sysadmin"
+type = "instructions"
+file = "addons/sysadmin/systemd-units.md"
+label = "systemd unit files"
+magika = []
+keywords = ["systemd unit", "unit file", ".service", ".timer", "ExecStart", "daemon-reload"]
+
 # --- ctf --------------------------------------------------------------------
 
 [addons.ctf-triage]

@@ -474,6 +474,37 @@ class AnsibleAddonTest(unittest.TestCase):
         self.assertNotIn("ansible", [p.addon for p in d.addons])
 
 
+class SystemdUnitsAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_service_file_prompt_routes_to_sysadmin(self):
+        d = self.router.route(["scrivi un file .service per avviare una app"])
+        self.assertEqual(d.category, "sysadmin")
+        self.assertIn("systemd-units", [p.addon for p in d.addons])
+
+    def test_systemd_authoring_keywords_route_to_systemd_units(self):
+        for text in [
+            "spiega un systemd unit",
+            "come scrivo un unit file",
+            "crea un .timer per il backup",
+            "cosa metto in ExecStart",
+            "quando serve daemon-reload",
+        ]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("systemd-units", [p.addon for p in d.addons])
+
+    def test_python_hash_prompt_does_not_pull_systemd_units(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("systemd-units", [p.addon for p in d.addons])
+
+    def test_managing_services_stays_on_linux_commands(self):
+        d = self.router.route(["come riavvio nginx con systemctl?"])
+        self.assertNotIn("systemd-units", [p.addon for p in d.addons])
+        self.assertIn("linux-commands", [p.addon for p in d.addons])
+
+
 class LinuxCommandsAddonTest(unittest.TestCase):
     def setUp(self):
         self.router = make_router()
