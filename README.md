@@ -65,6 +65,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `linux-commands` | sysadmin | instructions | 1650 | default of `sysadmin`, Magika `shell` |
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
+| `ansible` | sysadmin | instructions | 520 | ansible, playbook, ansible-playbook, ansible-galaxy, inventory, role ansible, become, idempotent… |
 | `ctf-triage` | ctf | instructions | 590 | any CTF request (default), Magika elf/pebin/wasm |
 | `docker` | shared | skill | 350 | docker, compose, container… (any category) |
 | `regex` | shared | instructions | 290 | regex, lookahead, lookbehind, capture group… (any category) |
