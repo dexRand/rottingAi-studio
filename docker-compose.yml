@@ -6,6 +6,7 @@
 # profile. `docker compose up` (no args) starts nothing.
 #
 #   docker compose --profile gui up -d     # Open WebUI (full GUI)
+#   docker compose --profile web-search up -d searxng   # SearXNG (web_search)
 # ============================================================================
 
 services:
@@ -27,13 +28,17 @@ services:
       - webui-data:/app/backend/data
     restart: "no"
 
-  # --- RAG / web-search: NOT implemented yet (future, optional) ----------
-  # rag:
-  #   build: ./services/rag
-  #   profiles: ["rag"]
-  # web-search:
-  #   build: ./services/web-search
-  #   profiles: ["web-search"]
+  # --- web-search: SearXNG metasearch, localhost only --------------------
+  searxng:
+    image: searxng/searxng
+    profiles: ["web-search"]
+    ports:
+      - "127.0.0.1:8888:8080"
+    environment:
+      SEARXNG_SETTINGS_PATH: /etc/searxng/settings.yml
+    volumes:
+      - ./services/web-search/settings.yml:/etc/searxng/settings.yml:ro
+    restart: "no"
 
 volumes:
   webui-data:
