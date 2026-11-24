@@ -70,7 +70,8 @@ type = "instructions"
 file = "addons/coding/javascript.md"
 label = "JavaScript / TypeScript"
 magika = ["javascript", "typescript"]
-keywords = ["javascript", "js", "typescript", "ts", "npm", ".js", ".ts", ".tsx"]
+keywords = ["javascript", "js", "typescript", "ts", "npm", ".js", ".ts", ".tsx",
+            "react", "reactjs", "usestate"]
 
 [addons.laravel]
 category = "coding"
@@ -106,7 +107,8 @@ file = "addons/sysadmin/linux-commands.md"
 label = "Linux shell commands"
 magika = ["shell"]
 keywords = ["bash", "zsh", "chmod", "chown", "systemctl", "journalctl", "grep", "sed", "awk",
-            "find", "rsync", "tar", "df", "du", "lsblk", "mount", "ip addr", "ss -", "sudo", "cron"]
+            "find", "rsync", "tar", "df", "du", "lsblk", "mount", "ip addr", "ss -", "sudo", "cron",
+            "deploy", "vpn", "wireguard", "openvpn"]
 
 [addons.arch-sysadmin]
 category = "sysadmin"

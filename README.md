@@ -58,7 +58,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | Add-on | Category | Type | ~Tokens | Triggered by |
 |---|---|---|---|---|
 | `python` | coding | instructions | 1500 | Magika `python`, keywords (pip, pytest, venv…) |
-| `javascript` | coding | instructions | 623 | keywords (js, ts, typescript, npm, .js, .ts, .tsx…), Magika javascript/typescript |
+| `javascript` | coding | instructions | 623 | keywords (js, ts, typescript, react, reactjs, usestate, npm, .js, .ts, .tsx…), Magika javascript/typescript |
 | `laravel` | coding | instructions | 570 | keywords (laravel, php, eloquent, blade, artisan…), Magika php |
 | `vue` | coding | instructions | 582 | keywords (vue, vuejs, pinia, vite.config, .vue…) |
 | `c` | coding | instructions | 518 | keywords (c++, cpp, gcc, clang, makefile, pointer, segfault, gdb, valgrind, .c, .h, .cpp…), Magika c/cpp |
