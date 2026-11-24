@@ -136,6 +136,14 @@ magika = []
 keywords = ["ansible", "playbook", "ansible-playbook", "ansible-galaxy", "inventory",
             "role ansible", "become", "idempotent", "idempotency", "idempotenza"]
 
+[addons.systemd-units]
+category = "sysadmin"
+type = "instructions"
+file = "addons/sysadmin/systemd-units.md"
+label = "systemd unit files"
+magika = []
+keywords = ["systemd unit", "unit file", "unit files", ".service", ".timer", "ExecStart", "daemon-reload"]
+
 [addons.terraform]
 category = "sysadmin"
 type = "instructions"
@@ -239,6 +247,14 @@ file = "addons/shared/bash-scripting.md"
 label = "Bash scripting"
 magika = []
 keywords = ["bash script", "shell script", "scrivi uno script", "shebang", "shellcheck", "set -euo pipefail"]
+
+[addons.github-actions]
+category = "shared"
+type = "instructions"
+file = "addons/shared/github-actions.md"
+label = "GitHub Actions / CI"
+magika = []
+keywords = ["github actions", "github workflow", "ci/cd", ".github/workflows", "actions/checkout"]
 
 # --- skill catalog ----------------------------------------------------------
 # OpenCode-only skills grouped by category. They are too large to inject

@@ -474,6 +474,68 @@ class AnsibleAddonTest(unittest.TestCase):
         self.assertNotIn("ansible", [p.addon for p in d.addons])
 
 
+class GitHubActionsAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_github_actions_workflow_prompt_routes_to_addon(self):
+        d = self.router.route(["come configuro una github actions workflow per il deploy?"])
+        self.assertIn("github-actions", [p.addon for p in d.addons])
+
+    def test_keywords_route_to_github_actions(self):
+        prompts = [
+            "setup ci/cd per il progetto",
+            "dove metto il file .github/workflows/deploy.yml?",
+            "come uso actions/checkout in un job?",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("github-actions", [p.addon for p in d.addons])
+
+    def test_generic_pipeline_or_workflow_words_do_not_pull_github_actions(self):
+        for text in ["data pipeline etl con airflow", "come organizzo il workflow del mio team"]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertNotIn("github-actions", [p.addon for p in d.addons])
+
+    def test_python_hash_prompt_does_not_pull_github_actions(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("github-actions", [p.addon for p in d.addons])
+
+
+class SystemdUnitsAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_service_file_prompt_routes_to_sysadmin(self):
+        d = self.router.route(["scrivi un file .service per avviare una app"])
+        self.assertEqual(d.category, "sysadmin")
+        self.assertIn("systemd-units", [p.addon for p in d.addons])
+
+    def test_systemd_authoring_keywords_route_to_systemd_units(self):
+        for text in [
+            "spiega un systemd unit",
+            "come scrivo un unit file",
+            "devo scrivere unit files per il servizio",
+            "crea un .timer per il backup",
+            "cosa metto in ExecStart",
+            "quando serve daemon-reload",
+        ]:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("systemd-units", [p.addon for p in d.addons])
+
+    def test_python_hash_prompt_does_not_pull_systemd_units(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("systemd-units", [p.addon for p in d.addons])
+
+    def test_managing_services_stays_on_linux_commands(self):
+        d = self.router.route(["come riavvio nginx con systemctl?"])
+        self.assertNotIn("systemd-units", [p.addon for p in d.addons])
+        self.assertIn("linux-commands", [p.addon for p in d.addons])
+
+
 class TerraformAddonTest(unittest.TestCase):
     def setUp(self):
         self.router = make_router()

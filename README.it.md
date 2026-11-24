@@ -66,6 +66,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `arch-sysadmin` | sysadmin | skill | 580 | pacman, AUR, btrfs, CachyOS… |
 | `proxmox` | sysadmin | skill | 360 | proxmox, qm, pct, lxc… |
 | `ansible` | sysadmin | istruzioni | 520 | ansible, playbook, ansible-playbook, ansible-galaxy, inventory, role ansible, become, idempotent… |
+| `systemd-units` | sysadmin | istruzioni | 365 | systemd unit, unit file, .service, .timer, ExecStart, daemon-reload… |
 | `terraform` | sysadmin | istruzioni | 424 | terraform, opentofu, hcl, .tf, provider aws… |
 | `ctf-triage` | ctf | istruzioni | 590 | qualsiasi richiesta CTF (default), Magika elf/pebin/wasm |
 | `docker` | condiviso | skill | 350 | docker, compose, container… (qualsiasi categoria) |
@@ -77,6 +78,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `translate` | condiviso | istruzioni | 309 | traduci, translate, in inglese, in italiano, into english… (qualsiasi categoria) |
 | `humanize` | condiviso | istruzioni | 331 | humanize, umanizza, più umano, più naturale, meno robotico… (qualsiasi categoria) |
 | `bash-scripting` | condiviso | istruzioni | 308 | bash script, shell script, scrivi uno script, shebang, shellcheck, set -euo pipefail… (qualsiasi categoria) |
+| `github-actions` | condiviso | istruzioni | 406 | github actions, github workflow, ci/cd, .github/workflows, actions/checkout… (qualsiasi categoria) |
 
 Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
 necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne
@@ -136,6 +138,7 @@ cp .env.example .env                # porte / API key se serve
                          .venv con Magika (+ GLiClass sperimentale / tf-idf)
 ./ai download [--all|<ruolo>]
 ./ai setup [--all] [--no-router]
+./ai rag-index           ricostruisce la knowledge base locale (services/rag/docs/)
 ./ai benchmark [ruolo] [thread]
 ./ai upgrade [all|runtime|skills|check]
 ./ai healthcheck         integrità + salute

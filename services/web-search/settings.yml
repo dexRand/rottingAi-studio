@@ -1,0 +1,22 @@
+# SearXNG config for rottingAi-studio — local, opt-in web_search backend.
+# Mounted read-only at /etc/searxng/settings.yml by the `searxng` compose service.
+# No logging or query caching: the instance is localhost-only and personal.
+use_default_settings: true
+
+general:
+  instance_name: "rottingAi"
+  debug: false
+
+server:
+  # Required by SearXNG; local-only placeholder, not an auth secret.
+  secret_key: "rottingai-local-searxng"
+  # Reachable from inside the container (published on 127.0.0.1:8888 only).
+  bind_address: "0.0.0.0"
+  # Required with use_default_settings, otherwise SearXNG refuses to start.
+  limiter: false
+
+search:
+  formats:
+    - html
+    - json
+  autocomplete: ""

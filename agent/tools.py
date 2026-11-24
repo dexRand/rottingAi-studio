@@ -7,11 +7,14 @@ from __future__ import annotations
 
 import difflib
 import html
+import json
+import os
 import re
 import socket
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,6 +25,7 @@ COMMAND_TIMEOUT = 120      # seconds
 FETCH_TIMEOUT = 10         # seconds
 FETCH_MAX = 8000           # chars of page text returned to the model
 USER_AGENT = "rottingAi/1.0"
+SEARXNG_URL = os.environ.get("SEARXNG_URL", "http://127.0.0.1:8888/search")
 
 SPECS = [
     {"type": "function", "function": {
@@ -77,6 +81,17 @@ SPECS = [
         "parameters": {"type": "object", "properties": {
             "url": {"type": "string", "description": "the http(s) URL to fetch"}},
             "required": ["url"]}}},
+    {"type": "function", "function": {
+        "name": "kb_search",
+        "description": "Search the LOCAL knowledge base (documents the user indexed into "
+                       "services/rag/docs/). Returns the top fragments with their source file. "
+                       "Read-only. Use it when the user asks about documentation you may not "
+                       "have memorised.",
+        "parameters": {"type": "object", "properties": {
+            "query": {"type": "string", "description": "the search query"},
+            "k": {"type": "integer", "description": "number of fragments, 1-10",
+                  "default": 5, "minimum": 1, "maximum": 10}},
+            "required": ["query"]}}},
 ]
 
 _DROP_BLOCKS = re.compile(r"<(script|style|head)\b[^>]*>.*?</\1\s*>", re.IGNORECASE | re.DOTALL)
@@ -108,6 +123,38 @@ def _diff(path: Path, old: str, new: str) -> str:
     lines = difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
                                  fromfile=str(path), tofile=str(path), n=2)
     return "".join(lines) or "(no changes)"
+
+
+def _searxng_search(query: str, base_url: str = SEARXNG_URL, timeout: int = 5) -> list[dict] | None:
+    """Query a local SearXNG instance over its JSON API.
+
+    Returns the list of results, or None on ANY failure (connection refused,
+    timeout, HTTP error, non-JSON body, missing `results`): None triggers the
+    ddgs fallback in t_web_search.
+    """
+    url = f"{base_url}?q={urllib.parse.quote(query)}&format=json"
+    req = urllib.request.Request(url, headers={"User-Agent": "rottingAi-websearch/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        items = data["results"]
+        if not isinstance(items, list):
+            return None
+        out = []
+        for r in items:
+            if not isinstance(r, dict):
+                continue
+            title = str(r.get("title") or "").strip()
+            link = str(r.get("url") or "").strip()
+            snippet = str(r.get("content") or r.get("snippet") or "")
+            snippet = html.unescape(re.sub(r"<[^>]+>", " ", snippet))
+            snippet = " ".join(snippet.split())
+            if not snippet:
+                snippet = title
+            out.append({"title": title, "url": link, "snippet": snippet})
+        return out
+    except Exception:
+        return None
 
 
 @dataclass
@@ -181,6 +228,18 @@ class Toolbox:
         return f"ok: edited {p}"
 
     def t_web_search(self, query: str) -> str:
+        results = _searxng_search(query, base_url=SEARXNG_URL)
+        if results is not None:
+            if not results:
+                return "no results."
+            out = []
+            for i, r in enumerate(results[:5], 1):
+                title = r["title"]
+                url = r["url"]
+                body = r["snippet"]
+                out.append(f"{i}. {title}\n   {url}" + (f"\n   {body}" if body else ""))
+            return "\n".join(out)
+        # SearXNG not running (or failed): fall back to ddgs.
         try:
             from ddgs import DDGS
         except ImportError:
@@ -242,3 +301,17 @@ class Toolbox:
         if r.returncode != 0:
             return f"error: parse failed: {(r.stderr or '').strip()[:400]}"
         return (r.stdout or "").strip()[:12000]
+
+    def t_kb_search(self, query: str, k: int = 5) -> str:
+        try:
+            k = int(k)
+        except (TypeError, ValueError):
+            k = 5
+        k = max(1, min(10, k))
+        from services.rag.kb import search
+        hits = search(query, k=k)
+        if not hits:
+            return ("no results in the knowledge base. Drop .md/.txt files into "
+                    "services/rag/docs/ and run ./ai rag-index.")
+        out = [f"{i}. {h['file']} — {h['title']}\n{h['body']}" for i, h in enumerate(hits, 1)]
+        return _clip("\n\n".join(out))

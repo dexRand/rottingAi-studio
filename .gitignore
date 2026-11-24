@@ -31,3 +31,4 @@ tests/run-exam.py
 
 # RAG ingestion (parsed documents, user data)
 services/rag/docs/
+services/rag/kb.sqlite3*

@@ -1,7 +1,9 @@
 # services/web-search — ricerca web (SPEC)
 
-MCP server di ricerca web, attivo **solo su richiesta esplicita** dell'utente.
-**Non implementato in questa fase.**
+Ricerca web self-hosted, attiva **solo su richiesta esplicita** dell'utente.
+**v1 implementata:** servizio compose `searxng`, `settings.yml` e tool dell'agente
+`web_search` (SearXNG-first, fallback ddgs). Il collegamento MCP/OpenCode
+(`config/opencode/opencode.jsonc`) **non** fa parte di questa issue e resta lavoro futuro.
 
 ## Decisione
 
@@ -36,6 +38,17 @@ Contratto del tool:
 
 Nessuna indicizzazione: SearXNG interroga i motori al momento della chiamata.
 
+## Avvio / Run
+
+```bash
+docker compose --profile web-search up -d searxng
+curl "http://127.0.0.1:8888/search?q=test&format=json"
+```
+
+Il servizio ascolta solo su `127.0.0.1:8888` (nessuna esposizione di rete).
+Il tool `web_search` dell'agente interroga SearXNG per primo e ripiega su ddgs
+quando il container non è in esecuzione (connection refused).
+
 ## Non in v1
 
 - Niente scraping proprio né crawler: solo l'API di SearXNG.
@@ -51,4 +64,4 @@ Nessuna indicizzazione: SearXNG interroga i motori al momento della chiamata.
 3. Il modello chiama `web_search` e risponde citando le fonti (titolo + URL).
 4. Senza rete risponde con la propria conoscenza e segnala che la ricerca non è disponibile.
 
-**Stato:** SPEC, non implementato in questa fase.
+**Stato:** v1 implementata (compose `searxng` + `settings.yml` + tool agente `web_search`, SearXNG-first con fallback ddgs). MCP/OpenCode: lavoro futuro.
