@@ -204,6 +204,14 @@ label = "Humanize text"
 magika = []
 keywords = ["humanize", "humanise", "umanizza", "umanizzare", "più umano", "più naturale", "meno robotico"]
 
+[addons.bash-scripting]
+category = "shared"
+type = "instructions"
+file = "addons/shared/bash-scripting.md"
+label = "Bash scripting"
+magika = []
+keywords = ["bash script", "shell script", "scrivi uno script", "shebang", "shellcheck", "set -euo pipefail"]
+
 # --- skill catalog ----------------------------------------------------------
 # OpenCode-only skills grouped by category. They are too large to inject
 # (2.5k–10k tokens each on a 16K context), so the router does NOT append them:
