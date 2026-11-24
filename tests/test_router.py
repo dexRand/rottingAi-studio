@@ -277,6 +277,29 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("humanize", [p.addon for p in d.addons])
 
+    def test_bash_scripting_prompt_routes_to_bash_scripting(self):
+        prompts = [
+            "scrivi uno script bash per fare il backup dei file",
+            "come uso shellcheck sul mio script?",
+            "aggiungi set -euo pipefail in cima allo script",
+            "mi serve una shebang corretta per lo script",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("bash-scripting", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_bash_scripting(self):
+        prompts = [
+            "come faccio l'hash in python",
+            "come riavvio nginx con systemctl",
+            "come eseguo questo comando bash sulla shell?",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertNotIn("bash-scripting", [p.addon for p in d.addons])
+
 
 class JavaScriptAddonTest(unittest.TestCase):
     def setUp(self):
