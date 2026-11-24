@@ -474,6 +474,32 @@ class AnsibleAddonTest(unittest.TestCase):
         self.assertNotIn("ansible", [p.addon for p in d.addons])
 
 
+class GitHubActionsAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_github_actions_workflow_prompt_routes_to_addon(self):
+        # A shared add-on fires without a category, so do not assert one here.
+        d = self.router.route(["come configuro una github actions workflow per il deploy?"])
+        self.assertIn("github-actions", [p.addon for p in d.addons])
+
+    def test_keywords_route_to_github_actions(self):
+        prompts = [
+            "setup ci/cd per il progetto",
+            "dove metto il file .github/workflows/deploy.yml?",
+            "come uso actions/checkout in un job?",
+            "la pipeline fallisce sul runner",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("github-actions", [p.addon for p in d.addons])
+
+    def test_python_hash_prompt_does_not_pull_github_actions(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("github-actions", [p.addon for p in d.addons])
+
+
 class LinuxCommandsAddonTest(unittest.TestCase):
     def setUp(self):
         self.router = make_router()
