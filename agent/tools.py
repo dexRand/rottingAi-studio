@@ -6,14 +6,22 @@ approval unless the agent runs with --yes. Reading is free.
 from __future__ import annotations
 
 import difflib
+import html
+import re
+import socket
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
 MAX_OUTPUT = 6000          # chars returned to the model per tool call
 COMMAND_TIMEOUT = 120      # seconds
+FETCH_TIMEOUT = 10         # seconds
+FETCH_MAX = 8000           # chars of page text returned to the model
+USER_AGENT = "rottingAi/1.0"
 
 SPECS = [
     {"type": "function", "function": {
@@ -60,7 +68,33 @@ SPECS = [
         "parameters": {"type": "object", "properties": {
             "path": {"type": "string", "description": "path to the document file"}},
             "required": ["path"]}}},
+    {"type": "function", "function": {
+        "name": "fetch_url",
+        "description": "Fetch a specific web page and return its readable text. STRICTLY opt-in: "
+                       "call it only when the user explicitly asks to fetch / read / open a given URL. "
+                       "Only http:// and https:// are allowed. Fails with a clear message if there "
+                       "is no internet.",
+        "parameters": {"type": "object", "properties": {
+            "url": {"type": "string", "description": "the http(s) URL to fetch"}},
+            "required": ["url"]}}},
 ]
+
+_DROP_BLOCKS = re.compile(r"<(script|style|head)\b[^>]*>.*?</\1\s*>", re.IGNORECASE | re.DOTALL)
+_BLOCK_BREAK = re.compile(
+    r"</?(?:p|br|div|li|ul|ol|tr|td|th|table|h[1-6]|section|article|header|footer|nav|blockquote|pre|hr)\b[^>]*>",
+    re.IGNORECASE)
+_TAG = re.compile(r"<[^>]+>")
+_BLANK = re.compile(r"\n{3,}")
+
+
+def _html_to_text(body: str) -> str:
+    """Light HTML-to-text: drop script/style/head, tags become breaks, keep the words."""
+    body = _DROP_BLOCKS.sub("", body)
+    body = _BLOCK_BREAK.sub("\n", body)
+    body = _TAG.sub("", body)
+    body = html.unescape(body)
+    text = "\n".join(line.strip() for line in body.splitlines())
+    return _BLANK.sub("\n\n", text).strip()
 
 
 def _clip(text: str, limit: int = MAX_OUTPUT) -> str:
@@ -168,6 +202,26 @@ class Toolbox:
             body = (r.get("body") or "").strip()
             out.append(f"{i}. {title}\n   {url}" + (f"\n   {body}" if body else ""))
         return "\n".join(out)
+
+    def t_fetch_url(self, url: str) -> str:
+        if not url.lower().startswith(("http://", "https://")):
+            return (f"error: fetch failed (invalid URL): only http:// and https:// are allowed, "
+                    f"got {url[:80]!r}")
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        try:
+            with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
+                charset = resp.headers.get_content_charset() or "utf-8"
+                raw = resp.read()
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, socket.timeout,
+                ValueError, OSError) as err:
+            return f"error: fetch failed (offline or invalid URL): {type(err).__name__}: {err}"
+        try:
+            text = raw.decode(charset, "replace")
+        except LookupError:                # unknown charset advertised by the server
+            text = raw.decode("utf-8", "replace")
+        text = _html_to_text(text)
+        self.log("letto", f"{url} ({len(text)} chars)")
+        return _clip(text, FETCH_MAX) or "(no readable text)"
 
     def t_parse_document(self, path: str) -> str:
         p = self._path(path)
