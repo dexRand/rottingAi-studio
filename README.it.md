@@ -71,6 +71,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `sql` | condiviso | istruzioni | 370 | query, JOIN, GROUP BY, postgres, sqlite… (qualsiasi categoria) |
 | `http` | condiviso | istruzioni | 352 | http, api, endpoint, curl, fetch, request, bearer, webhook… (qualsiasi categoria) |
 | `summarize` | condiviso | istruzioni | 310 | riassumi, summar, sintesi, tldr, bullet, punti chiave… (qualsiasi categoria) |
+| `translate` | condiviso | istruzioni | 309 | traduci, translate, in inglese, in italiano, into english… (qualsiasi categoria) |
 
 Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
 necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne

@@ -242,6 +242,22 @@ class RouterTest(unittest.TestCase):
         d = self.router.route(["come faccio l'hash in python"])
         self.assertNotIn("summarize", [p.addon for p in d.addons])
 
+    def test_translate_prompt_routes_to_translate(self):
+        prompts = [
+            "traduci questo paragrafo in inglese",
+            "translate this into English",
+            "traduci in italiano questa email",
+            "can you translate this into english?",
+        ]
+        for text in prompts:
+            with self.subTest(text=text):
+                d = self.router.route([text])
+                self.assertIn("translate", [p.addon for p in d.addons])
+
+    def test_unrelated_prompt_does_not_pick_translate(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("translate", [p.addon for p in d.addons])
+
 
 class JavaScriptAddonTest(unittest.TestCase):
     def setUp(self):
