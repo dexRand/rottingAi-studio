@@ -12,7 +12,6 @@ import os
 import re
 import subprocess
 import sys
-import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
@@ -99,19 +98,21 @@ def _searxng_search(query: str, base_url: str = SEARXNG_URL, timeout: int = 5) -
         items = data["results"]
         if not isinstance(items, list):
             return None
+        out = []
+        for r in items:
+            if not isinstance(r, dict):
+                continue
+            title = str(r.get("title") or "").strip()
+            link = str(r.get("url") or "").strip()
+            snippet = str(r.get("content") or r.get("snippet") or "")
+            snippet = html.unescape(re.sub(r"<[^>]+>", " ", snippet))
+            snippet = " ".join(snippet.split())
+            if not snippet:
+                snippet = title
+            out.append({"title": title, "url": link, "snippet": snippet})
+        return out
     except Exception:
         return None
-    out = []
-    for r in items:
-        title = (r.get("title") or "").strip()
-        link = (r.get("url") or "").strip()
-        snippet = r.get("content") or r.get("snippet") or ""
-        snippet = html.unescape(re.sub(r"<[^>]+>", " ", snippet))
-        snippet = " ".join(snippet.split())
-        if not snippet:
-            snippet = title
-        out.append({"title": title, "url": link, "snippet": snippet})
-    return out
 
 
 @dataclass
