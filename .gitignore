@@ -28,3 +28,6 @@ build/
 # Internal Proxmox exam (kept local, not part of the repo)
 tests/proxmox-exam.md
 tests/run-exam.py
+
+# RAG ingestion (parsed documents, user data)
+services/rag/docs/
