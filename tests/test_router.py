@@ -364,6 +364,40 @@ class LaravelAddonTest(unittest.TestCase):
         self.assertNotIn("laravel", [p.addon for p in d.addons])
 
 
+class CAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_cpp_keyword_routes_to_coding(self):
+        d = self.router.route(["scrivi una funzione in c++ che inverte una lista"])
+        self.assertEqual(d.category, "coding")
+        self.assertIn("c", [p.addon for p in d.addons])
+
+    def test_c_keywords_route_to_c(self):
+        d = self.router.route(["compila con gcc e correggi il segfault"])
+        self.assertIn("c", [p.addon for p in d.addons])
+
+    def test_dot_c_extension_routes_to_c(self):
+        d = self.router.route(["correggi il file main.c"])
+        self.assertIn("c", [p.addon for p in d.addons])
+
+    def test_magika_c_and_cpp_route_to_c(self):
+        for label in ("c", "cpp"):
+            with self.subTest(label=label):
+                router = make_magika_router([Detection(label, 0.99, f"file:app.{label}")])
+                d = router.route(["correggi questo file"])
+                self.assertEqual(d.category, "coding")
+                self.assertIn("c", [p.addon for p in d.addons])
+
+    def test_python_prompt_does_not_pull_c(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("c", [p.addon for p in d.addons])
+
+    def test_italian_ce_does_not_pull_c(self):
+        d = self.router.route(["c'è un problema con il codice"])
+        self.assertNotIn("c", [p.addon for p in d.addons])
+
+
 class MagikaRoutingTest(unittest.TestCase):
     """A binary with no textual hint must still reach ctf-triage."""
 
