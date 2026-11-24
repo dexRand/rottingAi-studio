@@ -72,6 +72,7 @@ brief is [`CLAUDE.md`](CLAUDE.md).
 | `http` | shared | instructions | 352 | http, api, endpoint, curl, fetch, request, bearer, webhook… (any category) |
 | `summarize` | shared | instructions | 310 | riassumi, summar, sintesi, tldr, bullet, punti chiave… (any category) |
 | `translate` | shared | instructions | 309 | traduci, translate, in inglese, in italiano, into english… (any category) |
+| `humanize` | shared | instructions | 331 | humanize, umanizza, più umano, più naturale, meno robotico… (any category) |
 
 Types, cheapest first: instructions → skill → tool → LoRA (only if measured
 necessary). Budget: `max_addon_tokens` (4000) per conversation. Add one by

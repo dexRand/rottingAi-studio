@@ -72,6 +72,7 @@ brief del progetto è [`CLAUDE.md`](CLAUDE.md).
 | `http` | condiviso | istruzioni | 352 | http, api, endpoint, curl, fetch, request, bearer, webhook… (qualsiasi categoria) |
 | `summarize` | condiviso | istruzioni | 310 | riassumi, summar, sintesi, tldr, bullet, punti chiave… (qualsiasi categoria) |
 | `translate` | condiviso | istruzioni | 309 | traduci, translate, in inglese, in italiano, into english… (qualsiasi categoria) |
+| `humanize` | condiviso | istruzioni | 331 | humanize, umanizza, più umano, più naturale, meno robotico… (qualsiasi categoria) |
 
 Tipi, dal più economico: istruzioni → skill → tool → LoRA (solo se misurato
 necessario). Budget: `max_addon_tokens` (4000) per conversazione. Per aggiungerne
