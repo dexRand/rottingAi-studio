@@ -125,6 +125,15 @@ label = "Proxmox VE virtualization"
 magika = []
 keywords = ["proxmox", "pve", "qm ", "pct ", "lxc", "vzdump", "zfs", "ceph"]
 
+[addons.ansible]
+category = "sysadmin"
+type = "instructions"
+file = "addons/sysadmin/ansible.md"
+label = "Ansible automation"
+magika = []
+keywords = ["ansible", "playbook", "ansible-playbook", "ansible-galaxy", "inventory",
+            "role ansible", "become", "idempotent", "idempotency", "idempotenza"]
+
 # --- ctf --------------------------------------------------------------------
 
 [addons.ctf-triage]

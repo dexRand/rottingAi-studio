@@ -427,6 +427,32 @@ class CAddonTest(unittest.TestCase):
         self.assertNotIn("c", [p.addon for p in d.addons])
 
 
+class AnsibleAddonTest(unittest.TestCase):
+    def setUp(self):
+        self.router = make_router()
+
+    def test_ansible_playbook_routes_to_sysadmin(self):
+        d = self.router.route(["scrivi un playbook ansible per installare nginx"])
+        self.assertEqual(d.category, "sysadmin")
+        self.assertIn("ansible", [p.addon for p in d.addons])
+
+    def test_ansible_playbook_inventory_role_prompt_routes_to_ansible(self):
+        d = self.router.route(["come uso ansible-playbook con l'inventory e i role?"])
+        self.assertIn("ansible", [p.addon for p in d.addons])
+
+    def test_ansible_idempotent_task_routes_to_ansible(self):
+        d = self.router.route(["come rendo idempotente il task ansible?"])
+        self.assertIn("ansible", [p.addon for p in d.addons])
+
+    def test_ansible_become_playbook_routes_to_ansible(self):
+        d = self.router.route(["ansible become per eseguire il playbook come root"])
+        self.assertIn("ansible", [p.addon for p in d.addons])
+
+    def test_python_hash_prompt_does_not_pull_ansible(self):
+        d = self.router.route(["come faccio l'hash in python"])
+        self.assertNotIn("ansible", [p.addon for p in d.addons])
+
+
 class MagikaRoutingTest(unittest.TestCase):
     """A binary with no textual hint must still reach ctf-triage."""
 
