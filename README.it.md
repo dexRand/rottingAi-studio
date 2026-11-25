@@ -10,7 +10,7 @@ Uno **stack di AI locale** minimale e riproducibile per macchine CPU-only
 base sempre caricato**, più **add-on** scelti per ogni richiesta da un **router**
 piccolo e veloce — nessun cambio di modello.
 
-> **In breve** — `./ai start` carica un GGUF (Qwen3.5-9B) in un `llama-server`
+> **In breve** — `./ai start` carica un GGUF (Qwen3.5-4B di default) in un `llama-server`
 > nativo e ci mette davanti un router. Per ogni richiesta il router (regole a
 > parole chiave + Magika, non un LLM) sceglie una categoria e gli add-on che
 > servono al modello — es. una guida da Python senior o una guida ai comandi
@@ -87,32 +87,33 @@ uno: un file Markdown + una voce in `addons/registry.toml`, poi `./ai router-che
 ## Requisiti
 
 - Linux x86_64 con **AVX2** (qualunque CPU Intel/AMD moderna)
-- **16 GB di RAM** (budget ~8–10 GB per il modello; zram consigliato)
-- `git`, `cmake`, `make`, un compilatore C++ (`gcc`/`clang`) per llama.cpp
+- **16 GB di RAM** (budget ~8–10 GB per il modello; su 8 GB usa `lite`)
+- Tool di build per llama.cpp — installa una volta:
+  - Arch / CachyOS: `sudo pacman -S --needed base-devel cmake git`
+  - Debian / Ubuntu: `sudo apt install -y build-essential cmake git`
 - Python 3.11+ (router: solo libreria standard; Magika opzionale)
 
 ## Avvio rapido
 
-Solo la prima volta: compila llama.cpp, poi `setup` scarica tutto il resto.
+Solo la prima volta: compila llama.cpp, poi scarica modello + dipendenze router.
 
 ```bash
 git clone https://github.com/dexRand/rottingAi-studio.git
 cd rottingAi-studio
 
 cp .env.example .env                # porte / API key se serve
-./scripts/install.sh native         # compila llama.cpp con -march=native
-./ai setup                          # modello di default (Qwen3.5-9B) + dipendenze router (Magika)
-./ai setup --all                    # anche i modelli lite e ctf (~13 GB totali)
+./scripts/install.sh native         # compila llama.cpp (serve cmake + un compilatore C)
+./ai download                       # modello di default: lite (Qwen3.5-4B, ~2,6 GB)
+./ai router-install                 # Magika → riconoscimento file/codice
 
 ./ai chat                           # avvia modello + router, apre la web UI
 ./ai route "come vedo chi usa la porta 8080?" --show   # cosa aggiungerebbe il router?
 ./ai stop                           # ferma e libera la RAM
 ```
 
-- `./ai setup` è il comando unico per il primo avvio: controlla il binario
-  `llama-server`, scarica il modello di default e installa il venv del router
-  (Magika → riconoscimento file/codice). Su una macchina da 16 GB che serve solo
-  `lite`, usa `./ai download lite`.
+- `./ai setup` è la scorciatoia: controlla il binario `llama-server`, scarica il
+  modello di default e installa il venv del router. `./ai download --all` scarica
+  anche `base` (9B) e `ctf` (~13 GB totali).
 - `./ai` da solo apre l'agente da terminale; `./ai "prompt"` lo avvia con un prompt.
 
 ## Uso
@@ -149,13 +150,14 @@ cp .env.example .env                # porte / API key se serve
 
 | Ruolo | Modello | Quant | Dimensione | Uso |
 |---|---|---|---|---|
-| `base` | Qwen3.5-9B | Q4_K_M | 5,68 GB | **il** modello: sempre acceso, thinking spento di default |
-| `lite` | Qwen3.5-4B | Q4_K_M | 2,74 GB | alternativa più veloce per macchine deboli (al posto di `base`) |
+| `lite` | Qwen3.5-4B | Q4_K_M | 2,74 GB | **il default**: sempre acceso, sta in 8 GB |
+| `base` | Qwen3.5-9B | Q4_K_M | 5,68 GB | più pesante, qualità maggiore (`./ai start base`) |
 | `ctf` | WhiteRabbitNeo-2.5 (Qwen2.5-Coder-7B) | Q4_K_M | 4,68 GB | eccezione rara: sicurezza / CTF, avviato esplicitamente |
 
-Ne gira uno alla volta. `base` è il candidato principale e va ancora
-confermato con `./ai benchmark` sulla CPU di destinazione. I modelli stanno
-**fuori dalla repo** (`MODELS_DIR`, default `~/local-ai/models`); vedi `docs/models.md`.
+Ne gira uno alla volta. `lite` è il ruolo di default; `base` è l'alternativa
+più pesante, ancora da confermare con `./ai benchmark` sulla CPU di destinazione.
+I modelli stanno **fuori dalla repo** (`MODELS_DIR`, default `~/local-ai/models`);
+vedi `docs/models.md`.
 
 ## Backend del router
 
