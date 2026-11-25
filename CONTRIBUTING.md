@@ -58,6 +58,14 @@ gh pr merge <PR>        # accept + merge with main
 A human can still request changes on anything non-trivial, but a green workflow
 is enough to merge.
 
+### Model-dependent changes need a local gate
+
+CI can only run the pure-Python checks (`ci.yml`: unit tests, `router-check`,
+keyword eval). For anything that changes model behaviour — add-ons, agent tools,
+the router — open a `[verify]` issue with a checklist and run it on a machine
+that has `llama-server` + a GGUF **before merging**; that is the only way to see
+the add-on fire and the model produce decent output.
+
 ### After the merge: delete the branch
 
 Once merged (the issue closes by itself via `Closes #<n>`), **delete the branch**
